@@ -1,5 +1,4 @@
 rootProject.name = 'and-backend'
-include 'data-collect-module'
 include 'data-process-module'
 include 'user-module'
 include 'alert-module'
