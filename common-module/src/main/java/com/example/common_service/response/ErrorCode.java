@@ -1,4 +1,4 @@
-package com.example.data_process_module.common.response;
+package com.example.common_service.response;
 
 public enum ErrorCode {
     VALIDATION_ERROR,

@@ -31,4 +31,29 @@ allprojects {
 	tasks.named('test') {
 		useJUnitPlatform()
 	}
+
+}
+
+project(':alert-module') {
+	dependencies {
+		implementation project(':common-module')
+	}
+}
+
+project(':data-process-module') {
+	dependencies {
+		implementation project(':common-module')
+	}
+}
+
+project(':trade-module') {
+	dependencies {
+		implementation project(':common-module')
+	}
+}
+
+project(':user-module') {
+	dependencies {
+		implementation project(':common-module')
+	}
 }

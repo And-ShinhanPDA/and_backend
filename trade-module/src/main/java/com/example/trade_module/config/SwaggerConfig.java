@@ -1,25 +1,15 @@
 package com.example.trade_module.config;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
+import com.example.common_service.config.SwaggerConfigInterface;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration    // 스프링 실행시 설정파일 읽어드리기 위한 어노테이션
-public class SwaggerConfig {
+public class SwaggerConfig implements SwaggerConfigInterface {
 
     @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI()
-                .components(new Components())
-                .info(apiInfo());
-    }
-
-    private Info apiInfo() {
-        return new Info()
-                .title("Trade API")
-                .description("자동매매에 관한 REST API")
-                .version("1.0.0");
+    public GroupedOpenApi tradeGroupedOpenApi() {
+        return createGroupedOpenApi("trade", "/trade/**", "Trade API", "자동매매 업무 처리를 위한 API");
     }
 }

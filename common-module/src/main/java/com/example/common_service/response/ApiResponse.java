@@ -1,4 +1,4 @@
-package com.example.alert_module.common.response;
+package com.example.common_service.response;
 
 import java.util.List;
 
