@@ -1,30 +1,34 @@
 package com.example.common_service.response;
 
-import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
 
+
+@Getter
 public class ApiResponse<T> {
 
-    private String message;
-    private T data;
-    private ApiError error;
+    private final String message;
+    private final T data;
+    private final ApiError error;
 
-    public ApiResponse() {}
-
-    public ApiResponse(String message, T data, ApiError error) {
+    @Builder
+    private ApiResponse(String message, T data, ApiError error) {
         this.message = message;
         this.data = data;
         this.error = error;
     }
 
     public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(message, data, null);
+        return ApiResponse.<T>builder()
+                .message(message)
+                .data(data)
+                .build();
     }
 
-    public static <T> ApiResponse<T> error(String message, String type, List<String> details) {
-        return new ApiResponse<>(message, null, new ApiError(type, details));
+    public static <T> ApiResponse<T> error(String code, String detail) {
+        return ApiResponse.<T>builder()
+                .message(detail)
+                .error(new ApiError(code, detail))
+                .build();
     }
-
-    public String getMessage() { return message; }
-    public T getData() { return data; }
-    public ApiError getError() { return error; }
 }

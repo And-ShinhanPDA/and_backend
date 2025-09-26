@@ -10,6 +10,6 @@ public class SwaggerConfig implements SwaggerConfigInterface {
 
     @Bean
     public GroupedOpenApi userGroupedOpenApi() {
-        return createGroupedOpenApi("user", "/user/**", "User API", "사용자 업무 처리를 위한 API");
+        return createGroupedOpenApi("auth", "/auth/**", "Auth API", "사용자 업무 처리를 위한 API");
     }
 }

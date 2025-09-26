@@ -1,19 +1,13 @@
 package com.example.common_service.response;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@AllArgsConstructor
+@Getter
 public class ApiError {
+    private String code;
+    private String detail;
 
-    private String type;
-    private List<String> details;
-
-    public ApiError() {}
-
-    public ApiError(String type, List<String> details) {
-        this.type = type;
-        this.details = details;
-    }
-
-    public String getType() { return type; }
-    public List<String> getDetails() { return details; }
 }
