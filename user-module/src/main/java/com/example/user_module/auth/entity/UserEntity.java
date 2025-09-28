@@ -1,31 +1,35 @@
 package com.example.user_module.auth.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
+
+import com.example.user_module.common.util.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-import static lombok.AccessLevel.PRIVATE;
-import static lombok.AccessLevel.PROTECTED;
-
 @Entity
 @Getter
-@AllArgsConstructor(access =  PRIVATE)
-@NoArgsConstructor(access = PROTECTED)
-public class UserEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserEntity extends BaseTimeEntity {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
     private String name;
 
-    private LocalDateTime createdAt;
+    @Builder
+    public UserEntity(String email, String password, String name) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+    }
 }
