@@ -27,6 +27,7 @@ allprojects {
 		implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 		annotationProcessor 'org.projectlombok:lombok:1.18.38'
 		compileOnly 'org.projectlombok:lombok:1.18.38'
+		runtimeOnly 'com.mysql:mysql-connector-j'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	}
