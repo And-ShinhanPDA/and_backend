@@ -1,4 +1,4 @@
-package com.example.user_module.security.jwt;
+package com.example.user_module.common.security.jwt;
 
 import com.example.user_module.auth.entity.UserEntity;
 import io.jsonwebtoken.Claims;

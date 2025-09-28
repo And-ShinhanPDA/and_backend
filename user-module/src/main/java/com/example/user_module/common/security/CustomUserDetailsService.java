@@ -1,4 +1,4 @@
-package com.example.user_module.security;
+package com.example.user_module.common.security;
 
 import com.example.user_module.auth.entity.UserEntity;
 import com.example.user_module.auth.repository.UserRepository;

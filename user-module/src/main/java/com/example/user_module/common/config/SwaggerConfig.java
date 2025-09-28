@@ -1,4 +1,4 @@
-package com.example.user_module.config;
+package com.example.user_module.common.config;
 
 import com.example.common_service.config.SwaggerConfigInterface;
 import org.springdoc.core.models.GroupedOpenApi;

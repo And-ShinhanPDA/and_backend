@@ -1,7 +1,7 @@
-package com.example.user_module.security.jwt;
+package com.example.user_module.common.security.jwt;
 
 import com.example.common_service.response.ApiResponse;
-import com.example.common_service.response.ErrorCode;
+import com.example.common_service.response.ResponseCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,7 +28,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpStatus.FORBIDDEN.value());
 
         ApiResponse<Void> errorResponse =
-                ApiResponse.error(ErrorCode.FORBIDDEN.getCode(), ErrorCode.FORBIDDEN.getMessage());
+                ApiResponse.error(ResponseCode.FORBIDDEN.getCode(), ResponseCode.FORBIDDEN.getMessage());
 
         String errorJson = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(errorJson);

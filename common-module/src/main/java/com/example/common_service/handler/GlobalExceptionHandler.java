@@ -1,9 +1,7 @@
 package com.example.common_service.handler;
 
 import com.example.common_service.exception.AuthException;
-import com.example.common_service.response.ApiError;
 import com.example.common_service.response.ApiResponse;
-import com.example.common_service.response.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

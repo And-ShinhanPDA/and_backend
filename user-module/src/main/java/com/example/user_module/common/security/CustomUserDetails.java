@@ -1,4 +1,4 @@
-package com.example.user_module.security;
+package com.example.user_module.common.security;
 
 import com.example.user_module.auth.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
