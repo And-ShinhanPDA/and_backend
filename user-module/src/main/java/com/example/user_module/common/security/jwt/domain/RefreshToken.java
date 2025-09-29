@@ -1,4 +1,4 @@
-package com.example.user_module.common.security.jwt;
+package com.example.user_module.common.security.jwt.domain;
 
 import com.example.common_service.exception.AuthException;
 import com.example.common_service.response.ResponseCode;

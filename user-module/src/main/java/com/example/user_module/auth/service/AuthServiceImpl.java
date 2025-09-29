@@ -7,7 +7,7 @@ import com.example.user_module.auth.dto.response.AuthRes;
 import com.example.user_module.auth.entity.UserEntity;
 import com.example.user_module.auth.repository.UserRepository;
 import com.example.user_module.common.security.jwt.JwtProvider;
-import com.example.user_module.common.security.jwt.RefreshToken;
+import com.example.user_module.common.security.jwt.domain.RefreshToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -4,12 +4,13 @@ package com.example.user_module.auth.controller;
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
 import com.example.user_module.auth.dto.request.AuthReq;
-import com.example.user_module.auth.dto.request.AuthUser;
+import com.example.user_module.common.security.AuthUser;
 import com.example.user_module.auth.service.AuthService;
 import com.example.user_module.common.security.CustomUserDetails;
-import com.example.user_module.common.security.jwt.RefreshToken;
+import com.example.user_module.common.security.jwt.domain.RefreshToken;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,13 +51,15 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ApiResponse<?> logout(@AuthUser Long userId) {
+    public ResponseEntity<ApiResponse<?>> logout(@AuthUser Long userId) {
         if (userId == null) {
-            return ApiResponse.error(ResponseCode.UNAUTHORIZED);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(ResponseCode.UNAUTHORIZED));
         }
 
         RefreshToken.removeUserRefreshToken(userId);
-        return ApiResponse.success(ResponseCode.SUCCESS_LOGOUT, userId);
+        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_LOGOUT, null));
     }
 
 

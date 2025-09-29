@@ -1,4 +1,4 @@
-package com.example.user_module.auth.dto.request;
+package com.example.user_module.common.security;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 

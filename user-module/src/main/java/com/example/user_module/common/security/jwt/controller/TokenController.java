@@ -1,10 +1,10 @@
-package com.example.user_module.auth.controller;
+package com.example.user_module.common.security.jwt.controller;
 
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
-import com.example.user_module.auth.dto.request.RefreshReq;
-import com.example.user_module.auth.service.RefreshTokenService;
-import com.example.user_module.common.security.jwt.RefreshTokenResponseDTO;
+import com.example.user_module.common.security.jwt.dto.RefreshReq;
+import com.example.user_module.common.security.jwt.service.RefreshTokenService;
+import com.example.user_module.common.security.jwt.dto.RefreshRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +19,7 @@ public class TokenController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/refresh")
-    public ApiResponse<RefreshTokenResponseDTO> refresh(@RequestBody RefreshReq.RefreshRequest request) {
+    public ApiResponse<RefreshRes> refresh(@RequestBody RefreshReq.RefreshRequest request) {
         return ApiResponse.success(ResponseCode.SUCCESS_REISSUE,
                 refreshTokenService.refreshToken(request.refreshToken()));
     }

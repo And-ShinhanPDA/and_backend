@@ -1,10 +1,10 @@
-package com.example.user_module.auth.service;
+package com.example.user_module.common.security.jwt.service;
 
 import com.example.common_service.exception.AuthException;
 import com.example.common_service.response.ResponseCode;
 import com.example.user_module.common.security.jwt.JwtProvider;
-import com.example.user_module.common.security.jwt.RefreshToken;
-import com.example.user_module.common.security.jwt.RefreshTokenResponseDTO;
+import com.example.user_module.common.security.jwt.domain.RefreshToken;
+import com.example.user_module.common.security.jwt.dto.RefreshRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public RefreshTokenResponseDTO refreshToken(final String refreshToken) {
+    public RefreshRes refreshToken(final String refreshToken) {
         checkRefreshToken(refreshToken);
 
         // refresh token → userId 추출
@@ -31,7 +31,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         String newRefreshToken = jwtProvider.generateRefreshTokenByEmail(userId);
         RefreshToken.putRefreshToken(newRefreshToken, userId);
 
-        return RefreshTokenResponseDTO.builder()
+        return RefreshRes.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
