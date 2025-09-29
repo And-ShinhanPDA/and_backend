@@ -22,8 +22,12 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secretKey;
     private Key key;
-    @Value("${jwt.expiration-time}")
-    private long expirationTime;
+
+    @Value("${jwt.access-expiration-time}")
+    private long accessExpirationTime;   // Access Token 만료 (예: 15분)
+
+    @Value("${jwt.refresh-expiration-time}")
+    private long refreshExpirationTime;  // Refresh Token 만료 (예: 7일)
 
     @PostConstruct
     protected void init() {
@@ -32,49 +36,77 @@ public class JwtProvider {
     }
 
     /**
-     * JWT 생성
-     * @param user 사용자 정보
-     * @return 사용자 정보를 기반으로 추출된 토큰 반환
+     * Access Token 생성
      */
-    public String generateToken(UserEntity user) {
+    public String generateAccessToken(UserEntity user) {
         Claims claims = getClaims(user);
-
         Date now = new Date();
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expirationTime))
+                .setExpiration(new Date(now.getTime() + accessExpirationTime))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    /**
+     * Refresh Token 생성
+     */
+    public String generateRefreshToken(UserEntity user) {
+        Claims claims = getClaims(user);
+        Date now = new Date();
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshExpirationTime))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * 토큰 유효성 검사
+     */
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
             return claims.getBody().getExpiration().after(new Date());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return false; // 잘못된 토큰이면 false
         }
     }
 
+    /**
+     * 토큰에서 사용자 Email 추출
+     */
     public String getEmail(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 
     /**
-     * 토큰의 만료기한 반환
-     * @param token 일반적으로 액세스 토큰 / 토큰 재발급 요청 시에는 리프레쉬 토큰이 들어옴
-     * @return 해당 토큰의 만료정보를 반환
+     * 토큰 만료 시간(ms) 반환
      */
     public Long getExpirationTime(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration().getTime();
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration()
+                .getTime();
     }
 
     /**
-     * Claims 정보 생성
-     * @param user 사용자 정보 중 사용자를 구분할 수 있는 정보 두 개를 활용함
-     * @return 사용자 구분 정보인 이메일과 역할을 저장한 Claims 객체 반환
+     * Claims 생성
      */
     private Claims getClaims(UserEntity user) {
         return Jwts.claims().setSubject(user.getEmail());

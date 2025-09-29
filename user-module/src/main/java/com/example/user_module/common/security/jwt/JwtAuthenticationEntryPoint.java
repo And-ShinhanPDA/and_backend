@@ -42,8 +42,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(responseCode.getHttpStatus().value());
 
         ApiResponse<Void> errorResponse = ApiResponse.error(
-                responseCode.getCode(),
-                responseCode.getMessage()
+                responseCode
         );
 
         String errorJson = objectMapper.writeValueAsString(errorResponse);

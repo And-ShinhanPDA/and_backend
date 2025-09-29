@@ -6,11 +6,11 @@ import lombok.Builder;
 @Builder
 public class AuthReq {
     public record signUpReq (
-        @NotBlank
+        @NotBlank(message = "이메일은 필수 입력값입니다.")
         String email,
-        @NotBlank
+        @NotBlank(message = "이름은 필수 입력값입니다.")
         String name,
-        @NotBlank
+        @NotBlank(message = "비밀번호 필수 입력값입니다.")
         String password
     ) { }
 

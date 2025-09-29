@@ -17,18 +17,20 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    public static <T> ApiResponse<T> success(String code, String message, T data) {
+    // 성공 응답
+    public static <T> ApiResponse<T> success(ResponseCode responseCode, T data) {
         return ApiResponse.<T>builder()
-                .code(code)
-                .message(message)
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
                 .data(data)
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(String code, String message ) {
+    // 실패 응답
+    public static <T> ApiResponse<T> error(ResponseCode responseCode) {
         return ApiResponse.<T>builder()
-                .code(code)
-                .message(message)
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
                 .data(null)
                 .build();
     }

@@ -6,4 +6,11 @@ public class AuthRes {
             String email,
             String name
     ) {}
+
+    public record loginRes (
+            Long userId,
+            String email,
+            String name,
+            String token
+    ) {}
 }
