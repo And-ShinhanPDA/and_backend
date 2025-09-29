@@ -45,4 +45,5 @@ springdoc:
 
 jwt:
   secret : q4+1b+3PZPf7uUm7iv1u3fT1NYZQhMXnxZ0qFz1eN5U=
-  expiration-time: 108000000
+  access-expiration-time: 900000
+  refresh-expiration-time: 604800000

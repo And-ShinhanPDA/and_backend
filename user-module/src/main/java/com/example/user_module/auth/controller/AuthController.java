@@ -24,11 +24,17 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody AuthReq.signUpReq signUpReq) {
-        System.out.println("gg");
         return ResponseEntity.created(URI.create("/login"))
                 .body(ApiResponse.success(
-                        ResponseCode.SUCCESS_SIGN_UP.getCode(),
-                        ResponseCode.SUCCESS_SIGN_UP.getMessage(), authService.signUp(signUpReq)));
+                        ResponseCode.SUCCESS_SIGN_UP, authService.signUp(signUpReq)));
 
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody AuthReq.loginReq loginReq) {
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(
+                        ResponseCode.SUCCESS_LOGIN, authService.login(loginReq)
+                ));
     }
 }
