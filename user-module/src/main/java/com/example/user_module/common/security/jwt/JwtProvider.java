@@ -35,13 +35,11 @@ public class JwtProvider {
         key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
-    /**
-     * Access Token 생성
-     */
-    public String generateAccessToken(UserEntity user) {
-        Claims claims = getClaims(user);
-        Date now = new Date();
 
+    // Access Token 발급 (email 기반)
+    public String generateAccessTokenByEmail(Long id) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(id));
+        Date now = new Date();
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
@@ -50,13 +48,10 @@ public class JwtProvider {
                 .compact();
     }
 
-    /**
-     * Refresh Token 생성
-     */
-    public String generateRefreshToken(UserEntity user) {
-        Claims claims = getClaims(user);
+    // Refresh Token 발급 (email 기반)
+    public String generateRefreshTokenByEmail(Long id) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(id));
         Date now = new Date();
-
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
@@ -64,6 +59,38 @@ public class JwtProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+
+
+//    /**
+//     * Access Token 생성
+//     */
+//    public String generateAccessToken(UserEntity user) {
+//        Claims claims = getClaims(user);
+//        Date now = new Date();
+//
+//        return Jwts.builder()
+//                .setClaims(claims)
+//                .setIssuedAt(now)
+//                .setExpiration(new Date(now.getTime() + accessExpirationTime))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+//
+//    /**
+//     * Refresh Token 생성
+//     */
+//    public String generateRefreshToken(UserEntity user) {
+//        Claims claims = getClaims(user);
+//        Date now = new Date();
+//
+//        return Jwts.builder()
+//                .setClaims(claims)
+//                .setIssuedAt(now)
+//                .setExpiration(new Date(now.getTime() + refreshExpirationTime))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
 
     /**
      * 토큰 유효성 검사
@@ -83,7 +110,7 @@ public class JwtProvider {
     /**
      * 토큰에서 사용자 Email 추출
      */
-    public String getEmail(String token) {
+    public String getId(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
@@ -111,4 +138,11 @@ public class JwtProvider {
     private Claims getClaims(UserEntity user) {
         return Jwts.claims().setSubject(user.getEmail());
     }
+
+
+    // refresh 토큰 만료 시간 반환
+    public Long getRefreshExpirationTime() {
+        return refreshExpirationTime;
+    }
+
 }

@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token)) {  // 토큰 있을 때만 validateToken 실행
             if (jwtProvider.validateToken(token)) {
-                String email = jwtProvider.getEmail(token);
+                String email = jwtProvider.getId(token);
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
                 UsernamePasswordAuthenticationToken authentication =

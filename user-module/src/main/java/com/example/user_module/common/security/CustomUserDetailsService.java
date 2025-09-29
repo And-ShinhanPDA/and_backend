@@ -18,11 +18,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository authRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity user = authRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public UserDetails loadUserByUsername(String idStr) throws UsernameNotFoundException {
+        Long id = Long.parseLong(idStr);
+
+        UserEntity user = authRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
 
         return new CustomUserDetails(user);
     }
+
 
 }

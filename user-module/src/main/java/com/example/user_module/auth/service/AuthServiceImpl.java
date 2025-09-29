@@ -7,13 +7,14 @@ import com.example.user_module.auth.dto.response.AuthRes;
 import com.example.user_module.auth.entity.UserEntity;
 import com.example.user_module.auth.repository.UserRepository;
 import com.example.user_module.common.security.jwt.JwtProvider;
+import com.example.user_module.common.security.jwt.RefreshToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -33,7 +34,6 @@ public class AuthServiceImpl implements AuthService{
                 .name(signUpReq.name())
                 .build();
 
-
         UserEntity saved = userRepository.save(user);
 
         return new AuthRes.signUpRes(saved.getId(), saved.getEmail(), saved.getName());
@@ -41,18 +41,27 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public AuthRes.loginRes login(AuthReq.loginReq loginReq) {
-        UserEntity user = userRepository.findByEmail(loginReq.email()).orElseThrow(() -> new AuthException(ResponseCode.LOGIN_FAIL));
+        UserEntity user = userRepository.findByEmail(loginReq.email())
+                .orElseThrow(() -> new AuthException(ResponseCode.LOGIN_FAIL));
 
-
-
-        if(!passwordEncoder.matches(loginReq.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(loginReq.password(), user.getPassword())) {
             throw new AuthException(ResponseCode.LOGIN_FAIL);
         }
-        String token = jwtProvider.generateAccessToken(user);
 
-        return new AuthRes.loginRes(user.getId(), user.getEmail(), user.getName(), token);
+        // AccessToken + RefreshToken 발급
+        String accessToken = jwtProvider.generateAccessTokenByEmail(user.getId());
+        String refreshToken = jwtProvider.generateRefreshTokenByEmail(user.getId());
+
+        // 기존 RefreshToken 제거 후 새로 저장
+        RefreshToken.removeUserRefreshToken(user.getId());
+        RefreshToken.putRefreshToken(refreshToken, user.getId());
+
+        return new AuthRes.loginRes(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                accessToken,
+                refreshToken
+        );
     }
 }
-
-
-

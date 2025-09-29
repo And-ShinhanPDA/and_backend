@@ -11,6 +11,7 @@ public class AuthRes {
             Long userId,
             String email,
             String name,
-            String token
+            String accessToken,
+            String refreshToken
     ) {}
 }
