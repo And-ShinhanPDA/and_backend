@@ -8,9 +8,12 @@ import com.example.user_module.auth.entity.UserEntity;
 import com.example.user_module.auth.repository.UserRepository;
 import com.example.user_module.common.security.jwt.JwtProvider;
 import com.example.user_module.common.security.jwt.domain.RefreshToken;
+import com.example.user_module.common.security.jwt.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public AuthRes.signUpRes signUp(AuthReq.signUpReq signUpReq) {
@@ -48,20 +53,22 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthException(ResponseCode.LOGIN_FAIL);
         }
 
-        // AccessToken + RefreshToken 발급
-        String accessToken = jwtProvider.generateAccessTokenByEmail(user.getId());
-        String refreshToken = jwtProvider.generateRefreshTokenByEmail(user.getId());
+        String accessToken = jwtProvider.generateAccessToken(user.getId());
+        String refreshToken = jwtProvider.generateRefreshToken(user.getId());
 
-        // 기존 RefreshToken 제거 후 새로 저장
-        RefreshToken.removeUserRefreshToken(user.getId());
-        RefreshToken.putRefreshToken(refreshToken, user.getId());
+        RefreshToken saved = refreshTokenService.save(
+                user,
+                refreshToken,
+                LocalDateTime.now().plusDays(7)
+        );
 
         return new AuthRes.loginRes(
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
                 accessToken,
-                refreshToken
+                refreshToken,
+                saved.getId()
         );
     }
 }

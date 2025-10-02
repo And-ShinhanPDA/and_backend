@@ -4,13 +4,11 @@ package com.example.user_module.auth.controller;
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
 import com.example.user_module.auth.dto.request.AuthReq;
-import com.example.user_module.common.security.AuthUser;
 import com.example.user_module.auth.service.AuthService;
 import com.example.user_module.common.security.CustomUserDetails;
-import com.example.user_module.common.security.jwt.domain.RefreshToken;
+import com.example.user_module.common.security.jwt.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RequestMapping("/auth")
@@ -27,6 +26,7 @@ import java.net.URI;
 public class AuthController {
 
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
     private Long getAuthenticatedUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -50,16 +50,10 @@ public class AuthController {
                 ));
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<?>> logout(@AuthUser Long userId) {
-        if (userId == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error(ResponseCode.UNAUTHORIZED));
-        }
-
-        RefreshToken.removeUserRefreshToken(userId);
-        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_LOGOUT, null));
+    @DeleteMapping("/logout/{refreshTokenId}")
+    public ResponseEntity<?> logout(@PathVariable UUID refreshTokenId) {
+        refreshTokenService.delete(refreshTokenId);
+        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_LOGOUT, "로그아웃(기기별) 완료"));
     }
 
 

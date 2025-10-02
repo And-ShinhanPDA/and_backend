@@ -1,5 +1,7 @@
 package com.example.user_module.auth.dto.response;
 
+import java.util.UUID;
+
 public class AuthRes {
     public record signUpRes(
             Long userId,
@@ -12,6 +14,7 @@ public class AuthRes {
             String email,
             String name,
             String accessToken,
-            String refreshToken
+            String refreshToken,
+            UUID refreshTokenId
     ) {}
 }
