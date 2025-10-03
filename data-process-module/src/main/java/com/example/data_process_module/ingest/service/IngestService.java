@@ -4,8 +4,10 @@ package com.example.data_process_module.ingest.service;
 import com.example.data_process_module.ingest.dto.DailyDataRequest;
 import com.example.data_process_module.ingest.dto.MinuteDataRequest;
 import com.example.data_process_module.persist.entity.DailyCandleEntity;
+import com.example.data_process_module.persist.repository.DailyCandleRepository;
 import com.example.data_process_module.persist.service.PersistService;
 import com.example.data_process_module.transform.service.TransformService;
+import com.example.data_process_module.transform.util.CalculationUtil;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class IngestService {
 
     private final TransformService transformService;
-    private final PersistService persistService;
+    private final DailyCandleRepository dailyCandleRepository;
 
     public void processMinuteData(MinuteDataRequest dto) {
         log.info("[1분 데이터] symbol={}, price={}, volume={}",
@@ -28,7 +30,7 @@ public class IngestService {
 
     public void processDailyData(DailyDataRequest dto) {
 
-        DailyCandleEntity entity = DailyCandleEntity.builder()
+        DailyCandleEntity newEntity = DailyCandleEntity.builder()
                 .stockCode(dto.getSymbol())
                 .date(LocalDateTime.now())
                 .openPrice(dto.getOpenPrice())
@@ -38,10 +40,23 @@ public class IngestService {
                 .volume((int) dto.getPrevVolume())
                 .build();
 
-        List<Double> closePrices = Arrays.asList(70000.0, 71000.0, 72000.0, 73000.0, dto.getPrevClose());
+        List<DailyCandleEntity> history = dailyCandleRepository.findTop200ByStockCodeOrderByDateAsc(dto.getSymbol());
+        List<Double> closePrices = history.stream()
+                .map(DailyCandleEntity::getClosePrice)
+                .toList();
+        List<Integer> volumes = history.stream()
+                .map(DailyCandleEntity::getVolume)
+                .toList();
 
-        entity = transformService.enrichWithIndicators(entity, closePrices);
+        newEntity = transformService.enrichWithIndicators(newEntity, closePrices);
+        double avgVol20 = CalculationUtil.calculateAverageVolume(volumes, 20);
 
-        persistService.saveDaily(entity);
+        log.info("[1일 데이터 수신] symbol={}, closePrice={}, volume={}", newEntity.getStockCode(), newEntity.getClosePrice(), newEntity.getVolume());
+        log.info("  → SMA20={}, RSI14={}, Bollinger(상단={}, 하단={}), 평균거래량20={}",
+                newEntity.getSma20(), newEntity.getRsi14(),
+                newEntity.getBbUpper(), newEntity.getBbLower(),
+                avgVol20);
+
+
     }
 }
