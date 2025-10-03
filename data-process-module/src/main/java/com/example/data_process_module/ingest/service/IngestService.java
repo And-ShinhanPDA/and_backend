@@ -11,6 +11,7 @@ import com.example.data_process_module.transform.util.CalculationUtil;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,13 +24,7 @@ public class IngestService {
     private final TransformService transformService;
     private final DailyCandleRepository dailyCandleRepository;
 
-    public void processMinuteData(MinuteDataRequest dto) {
-        log.info("[1분 데이터] symbol={}, price={}, volume={}",
-                dto.getSymbol(), dto.getPrice(), dto.getVolume());
-    }
-
     public void processDailyData(DailyDataRequest dto) {
-
         DailyCandleEntity newEntity = DailyCandleEntity.builder()
                 .stockCode(dto.getSymbol())
                 .date(LocalDateTime.now())
@@ -40,7 +35,9 @@ public class IngestService {
                 .volume((int) dto.getPrevVolume())
                 .build();
 
-        List<DailyCandleEntity> history = dailyCandleRepository.findTop200ByStockCodeOrderByDateAsc(dto.getSymbol());
+        List<DailyCandleEntity> history =
+                dailyCandleRepository.findTop200ByStockCodeOrderByDateAsc(dto.getSymbol());
+
         List<Double> closePrices = history.stream()
                 .map(DailyCandleEntity::getClosePrice)
                 .toList();
@@ -51,12 +48,42 @@ public class IngestService {
         newEntity = transformService.enrichWithIndicators(newEntity, closePrices);
         double avgVol20 = CalculationUtil.calculateAverageVolume(volumes, 20);
 
-        log.info("[1일 데이터 수신] symbol={}, closePrice={}, volume={}", newEntity.getStockCode(), newEntity.getClosePrice(), newEntity.getVolume());
+        log.info("[1일 데이터 수신] symbol={}, closePrice={}, volume={}",
+                newEntity.getStockCode(), newEntity.getClosePrice(), newEntity.getVolume());
         log.info("  → SMA20={}, RSI14={}, Bollinger(상단={}, 하단={}), 평균거래량20={}",
                 newEntity.getSma20(), newEntity.getRsi14(),
                 newEntity.getBbUpper(), newEntity.getBbLower(),
                 avgVol20);
+    }
 
+    public void processMinuteData(MinuteDataRequest dto) {
+        DailyCandleEntity yesterday =
+                dailyCandleRepository.findTop1ByStockCodeOrderByDateDesc(dto.getSymbol());
 
+        double prevClose = yesterday.getClosePrice();
+        long prevVolume = yesterday.getVolume();
+        double openPrice = yesterday.getOpenPrice();
+        double high52w = yesterday.getHighPrice();
+        double low52w = yesterday.getLowPrice();
+
+        Map<String, Double> metrics = transformService.calculateIntradayMetrics(
+                dto.getPrice(),
+                dto.getVolume(),
+                openPrice,
+                prevClose,
+                prevVolume,
+                high52w,
+                low52w
+        );
+
+        log.info("[1분 데이터] symbol={}, price={}, volume={}",
+                dto.getSymbol(), dto.getPrice(), dto.getVolume());
+        log.info("  → 전날 거래량 대비={}% / 시가 대비 변동액={}원 ({}%) / 52주 고가대비={}%, 저가대비={}%",
+                metrics.get("volumeRatio"),
+                metrics.get("diffFromOpen"),
+                metrics.get("diffFromOpenPct"),
+                metrics.get("diffFromHigh52wPct"),
+                metrics.get("diffFromLow52wPct")
+        );
     }
 }
