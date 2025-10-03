@@ -33,4 +33,10 @@ public class CalculationUtil {
 
         return new double[]{mean + stdMultiplier * stddev, mean - stdMultiplier * stddev};
     }
+
+    public static double calculateAverageVolume(List<Integer> volumes, int period) {
+        if (volumes == null || volumes.size() < period) return 0.0;
+        return volumes.subList(volumes.size() - period, volumes.size())
+                .stream().mapToInt(Integer::intValue).average().orElse(0.0);
+    }
 }
