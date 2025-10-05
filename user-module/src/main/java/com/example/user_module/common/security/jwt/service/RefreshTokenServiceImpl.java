@@ -34,16 +34,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 
     @Override
-    public RefreshToken validate(UUID refreshTokenId, String refreshTokenValue) {
+    public RefreshToken validate(UUID refreshTokenId) {
         RefreshToken stored = refreshTokenRepository.findById(refreshTokenId)
-                .orElseThrow(() -> new AuthException(ResponseCode.UNAUTHORIZED));
-
-        if (!stored.getToken().equals(refreshTokenValue)) {
-            throw new AuthException(ResponseCode.UNAUTHORIZED);
-        }
+                .orElseThrow(() -> new AuthException(ResponseCode.REFRESH_TOKEN_NOT_FOUND));
 
         if (stored.getExpiryAt().isBefore(LocalDateTime.now())) {
-            throw new AuthException(ResponseCode.UNAUTHORIZED);
+            throw new AuthException(ResponseCode.EXPIRED_REFRESH_TOKEN);
         }
 
         return stored;

@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface RefreshTokenService {
     RefreshToken save(UserEntity user, String token, LocalDateTime expiryDate);
 
-    RefreshToken validate(UUID refreshTokenId, String refreshTokenValue);
+    RefreshToken validate(UUID refreshTokenId);
 
     void delete(UUID refreshTokenId);
 }
