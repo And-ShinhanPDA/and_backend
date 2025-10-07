@@ -2,45 +2,51 @@ package com.example.user_module.common.security.jwt.service;
 
 import com.example.common_service.exception.AuthException;
 import com.example.common_service.response.ResponseCode;
-import com.example.user_module.common.security.jwt.JwtProvider;
+import com.example.user_module.auth.entity.UserEntity;
 import com.example.user_module.common.security.jwt.domain.RefreshToken;
-import com.example.user_module.common.security.jwt.dto.RefreshRes;
+import com.example.user_module.common.security.jwt.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
-    private final JwtProvider jwtProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
-    public RefreshRes refreshToken(final String refreshToken) {
-        checkRefreshToken(refreshToken);
+    public RefreshToken save(UserEntity user, String token, LocalDateTime expiryAt) {
+        if (expiryAt == null) {
+            expiryAt = LocalDateTime.now().plusDays(7); // ✅ fallback
+        }
 
-        // refresh token → userId 추출
-        Long userId = RefreshToken.getRefreshToken(refreshToken);
-
-        // 새 AccessToken 발급
-        String newAccessToken = jwtProvider.generateAccessTokenByEmail(userId);
-
-        // 기존 RefreshToken 제거
-        RefreshToken.removeUserRefreshToken(userId);
-
-        // 새 RefreshToken 발급
-        String newRefreshToken = jwtProvider.generateRefreshTokenByEmail(userId);
-        RefreshToken.putRefreshToken(newRefreshToken, userId);
-
-        return RefreshRes.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .token(token)
+                .expiryAt(expiryAt) // ✅ null 방지
                 .build();
+
+        return refreshTokenRepository.save(refreshToken);
     }
 
 
-    private void checkRefreshToken(final String refreshToken) {
-        if (!jwtProvider.validateToken(refreshToken)) {
-            throw new AuthException(ResponseCode.INVALID_REFRESH_TOKEN);
+    @Override
+    public RefreshToken validate(UUID refreshTokenId) {
+        RefreshToken stored = refreshTokenRepository.findById(refreshTokenId)
+                .orElseThrow(() -> new AuthException(ResponseCode.REFRESH_TOKEN_NOT_FOUND));
+
+        if (stored.getExpiryAt().isBefore(LocalDateTime.now())) {
+            throw new AuthException(ResponseCode.EXPIRED_REFRESH_TOKEN);
         }
+
+        return stored;
+    }
+
+    @Override
+    public void delete(UUID refreshTokenId) {
+        refreshTokenRepository.deleteById(refreshTokenId);
     }
 }

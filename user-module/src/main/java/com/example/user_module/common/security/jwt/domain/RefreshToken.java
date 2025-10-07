@@ -1,58 +1,33 @@
 package com.example.user_module.common.security.jwt.domain;
 
-import com.example.common_service.exception.AuthException;
-import com.example.common_service.response.ResponseCode;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import com.example.user_module.auth.entity.UserEntity;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-/**
- * RefreshToken 저장 객체
- *
- * 운영 환경에서는 Redis 사용을 권장
- */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Entity
+@Table(name = "refreshToken")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RefreshToken {
 
-    // refreshToken → userId
-    protected static final Map<String, Long> refreshTokens = new HashMap<>();
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "token_id", columnDefinition = "BINARY(16)")
+    private UUID id;
 
-    /**
-     * refresh token으로 userId 가져오기
-     */
-    public static Long getRefreshToken(final String refreshToken) {
-        return Optional.ofNullable(refreshTokens.get(refreshToken))
-                .orElseThrow(() -> new AuthException(ResponseCode.INVALID_REFRESH_TOKEN));
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    /**
-     * refresh token 저장
-     */
-    public static void putRefreshToken(final String refreshToken, Long userId) {
-        refreshTokens.put(refreshToken, userId);
-    }
+    @Column(nullable = false, length = 512)
+    private String token;
 
-    /**
-     * 특정 refresh token 삭제
-     */
-    private static void removeRefreshToken(final String refreshToken) {
-        refreshTokens.remove(refreshToken);
-    }
-
-    /**
-     * userId의 기존 refresh token 제거
-     */
-    public static void removeUserRefreshToken(final Long userId) {
-        Iterator<Map.Entry<String, Long>> iterator = refreshTokens.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Long> entry = iterator.next();
-            if (entry.getValue().equals(userId)) {
-                iterator.remove();
-            }
-        }
-    }
+    @Column(nullable = false)
+    private LocalDateTime expiryAt;
 }
