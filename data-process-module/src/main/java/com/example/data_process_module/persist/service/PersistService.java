@@ -54,16 +54,15 @@ public class PersistService {
             log.info("🔍 {} 타입 = {}", key, value.getClass().getName());
 
             if (value instanceof DailyCandleEntity entity) {
-                dailyRepo.save(entity);
-                log.info("[SYNC] {} -> DB 저장 완료 (Entity)", key);
+                upsertDaily(entity, key);
             } else if (value instanceof Map<?, ?> mapValue) {
                 log.info("[SYNC] {} -> Map 구조로 저장되어 있음 (LinkedHashMap)", key);
                 DailyCandleEntity entity = convertMapToEntity(mapValue);
-                dailyRepo.save(entity);
-                log.info("[SYNC] {} -> DB 저장 완료 (Map → Entity)", key);
+                upsertDaily(entity, key);
             } else {
                 log.warn("⚠️ {} -> 예기치 못한 타입: {}", key, value.getClass().getName());
             }
+
         }
     }
 
@@ -77,7 +76,13 @@ public class PersistService {
         entity.setLowPrice(getDouble(map.get("lowPrice")));
         entity.setVolume(getInt(map.get("volume")));
         entity.setRsi14(getDouble(map.get("rsi14")));
+        entity.setSma5(getDouble(map.get("sma5")));
+        entity.setSma10(getDouble(map.get("sma10")));
         entity.setSma20(getDouble(map.get("sma20")));
+        entity.setSma30(getDouble(map.get("sma30")));
+        entity.setSma50(getDouble(map.get("sma50")));
+        entity.setSma100(getDouble(map.get("sma100")));
+        entity.setSma200(getDouble(map.get("sma200")));
         entity.setBbUpper(getDouble(map.get("bbUpper")));
         entity.setBbLower(getDouble(map.get("bbLower")));
         return entity;
@@ -91,8 +96,19 @@ public class PersistService {
         return obj == null ? null : ((Number) obj).intValue();
     }
 
+    private void upsertDaily(DailyCandleEntity entity, String key) {
+        DailyCandleEntity.PK pk = new DailyCandleEntity.PK(
+                entity.getStockCode(), entity.getDate()
+        );
 
+        if (dailyRepo.existsById(pk)) {
+            log.info("[SYNC] {} -> 기존 데이터 존재, update 처리", key);
+        } else {
+            log.info("[SYNC] {} -> 신규 데이터, insert 처리", key);
+        }
 
+        dailyRepo.save(entity);
+    }
 
     public void saveDaily(DailyCandleEntity entity) {
 //        dailyRepo.save(entity);

@@ -13,8 +13,8 @@ public class DailyIndicatorScheduler {
 
     private final PersistService persistService;
 
-//    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
-    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     public void syncDailyIndicators() {
         log.info("📦 [SCHEDULER] Redis → MySQL 일별 데이터 동기화 시작");
         persistService.syncDailyDataToDB();
