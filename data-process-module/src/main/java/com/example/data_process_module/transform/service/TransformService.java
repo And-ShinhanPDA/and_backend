@@ -1,14 +1,22 @@
 package com.example.data_process_module.transform.service;
 
 import com.example.data_process_module.persist.entity.DailyCandleEntity;
+import com.example.data_process_module.persist.service.PersistService;
 import com.example.data_process_module.transform.util.CalculationUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TransformService {
+
+    private final PersistService persistService;
+
     public DailyCandleEntity enrichWithIndicators(DailyCandleEntity entity,
                                                   List<Double> closePrices) {
 
@@ -25,6 +33,10 @@ public class TransformService {
         double[] boll = CalculationUtil.calculateBollinger(closePrices, 20, 2);
         entity.setBbUpper(boll[0]);
         entity.setBbLower(boll[1]);
+
+        log.info("[TRANSFORM] {} 지표 계산 완료", entity.getStockCode());
+
+        persistService.saveDailyData(entity.getStockCode(), entity);
 
         return entity;
     }
