@@ -28,6 +28,7 @@ allprojects {
 		annotationProcessor 'org.projectlombok:lombok:1.18.38'
 		compileOnly 'org.projectlombok:lombok:1.18.38'
 		runtimeOnly 'com.mysql:mysql-connector-j'
+		runtimeOnly 'com.h2database:h2'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	}

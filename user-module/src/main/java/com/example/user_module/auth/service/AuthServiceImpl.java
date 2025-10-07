@@ -56,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtProvider.generateAccessToken(user.getId());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
 
-        RefreshToken saved = refreshTokenService.save(
+        RefreshToken refresh = refreshTokenService.save(
                 user,
                 refreshToken,
                 LocalDateTime.now().plusDays(7)
@@ -67,8 +67,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getName(),
                 accessToken,
-                refreshToken,
-                saved.getId()
+                refresh.getId()
         );
     }
 }
