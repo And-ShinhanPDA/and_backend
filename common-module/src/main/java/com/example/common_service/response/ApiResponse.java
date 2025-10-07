@@ -1,30 +1,37 @@
 package com.example.common_service.response;
 
-import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 public class ApiResponse<T> {
 
-    private String message;
-    private T data;
-    private ApiError error;
+    private final String code;     // ex) SUCCESS_SIGN_UP, USER_NOT_FOUND
+    private final String message;  // 응답 메시지
+    private final T data;          // 성공 시 데이터, 실패 시 null
 
-    public ApiResponse() {}
-
-    public ApiResponse(String message, T data, ApiError error) {
+    @Builder
+    private ApiResponse(String code, String message, T data) {
+        this.code = code;
         this.message = message;
         this.data = data;
-        this.error = error;
     }
 
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(message, data, null);
+    // 성공 응답
+    public static <T> ApiResponse<T> success(ResponseCode responseCode, T data) {
+        return ApiResponse.<T>builder()
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
+                .data(data)
+                .build();
     }
 
-    public static <T> ApiResponse<T> error(String message, String type, List<String> details) {
-        return new ApiResponse<>(message, null, new ApiError(type, details));
+    // 실패 응답
+    public static <T> ApiResponse<T> error(ResponseCode responseCode) {
+        return ApiResponse.<T>builder()
+                .code(responseCode.getCode())
+                .message(responseCode.getMessage())
+                .data(null)
+                .build();
     }
-
-    public String getMessage() { return message; }
-    public T getData() { return data; }
-    public ApiError getError() { return error; }
 }
