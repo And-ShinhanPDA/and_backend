@@ -52,7 +52,7 @@ project(':data-process-module') {
 	}
 }
 
-project(':trade-module') {
+project(':search-module') {
 	dependencies {
 		implementation project(':common-module')
 	}
