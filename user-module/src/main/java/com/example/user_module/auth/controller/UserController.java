@@ -19,4 +19,9 @@ public class UserController {
         }
         return ApiResponse.success(ResponseCode.SUCCESS_LOGIN, userId);
     }
+
+    @GetMapping("/profile")
+    public String profile() {
+        return "Hello JWT!";
+    }
 }
