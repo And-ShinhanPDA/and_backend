@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 @RestController
 public class UserController {
     @GetMapping("/me")
@@ -18,5 +18,10 @@ public class UserController {
             return ApiResponse.error(ResponseCode.UNAUTHORIZED);
         }
         return ApiResponse.success(ResponseCode.SUCCESS_LOGIN, userId);
+    }
+
+    @GetMapping("/profile")
+    public String profile() {
+        return "Hello JWT!";
     }
 }

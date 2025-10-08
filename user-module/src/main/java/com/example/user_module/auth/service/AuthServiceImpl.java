@@ -67,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getName(),
                 accessToken,
+                refreshToken,
                 refresh.getId()
         );
     }

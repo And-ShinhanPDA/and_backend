@@ -1,4 +1,4 @@
-package com.example.trade_module.config;
+package com.example.search_module.config;
 
 import com.example.common_service.config.SwaggerConfigInterface;
 import org.springdoc.core.models.GroupedOpenApi;
