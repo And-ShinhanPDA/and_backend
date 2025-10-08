@@ -32,6 +32,30 @@ public class AlertService {
             alerts = alertRepository.findByUserId(userId);
         }
 
+        if (alerts.isEmpty()) return List.of();
+
+        // ✅ 모든 alertId 한 번에 모으기
+        List<Long> alertIds = alerts.stream().map(Alert::getId).toList();
+
+        // ✅ 관련된 AlertConditionManager + AlertCondition 한 번에 조회
+        List<AlertConditionManager> managers =
+                alertConditionManagerRepository.findByAlertIdsWithCondition(alertIds);
+
+        // ✅ alertId별로 conditions 매핑
+        Map<Long, List<AlertResponse.ConditionResponse>> conditionMap = managers.stream()
+                .collect(Collectors.groupingBy(
+                        acm -> acm.getAlert().getId(),
+                        Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
+                                acm.getAlertCondition().getId(),
+                                acm.getAlertCondition().getIndicator(),
+                                null, // operator (필요시 추가)
+                                acm.getThreshold(),
+                                acm.getThreshold2(),
+                                acm.getAlertCondition().getDescription()
+                        ), Collectors.toList())
+                ));
+
+        // ✅ AlertResponse 생성
         return alerts.stream()
                 .map(alert -> new AlertResponse(
                         alert.getId(),
@@ -40,10 +64,11 @@ public class AlertService {
                         alert.getIsActived(),
                         alert.getCreatedAt(),
                         alert.getUpdatedAt(),
-                        List.of()
+                        conditionMap.getOrDefault(alert.getId(), List.of())
                 ))
                 .collect(Collectors.toList());
     }
+
 
     @Transactional
     public AlertResponse createAlert(Long userId, AlertCreateRequest request) {
@@ -82,6 +107,7 @@ public class AlertService {
                             cond.getIndicator(),
                             null,
                             c.threshold(),
+                            c.threshold2(),
                             cond.getDescription()
                     )
             );

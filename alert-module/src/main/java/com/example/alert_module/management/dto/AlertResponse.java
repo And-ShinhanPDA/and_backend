@@ -17,6 +17,7 @@ public record AlertResponse(
             String indicator,
             String operator,
             Double threshold,
+            Double threshold2,
             String description
     ) {}
 }
