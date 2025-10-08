@@ -23,6 +23,7 @@ public class IngestService {
 
     private final TransformService transformService;
     private final DailyCandleRepository dailyCandleRepository;
+    private final PersistService persistService;
 
     public void processDailyData(DailyDataRequest dto) {
         DailyCandleEntity newEntity = DailyCandleEntity.builder()
@@ -75,6 +76,9 @@ public class IngestService {
                 high52w,
                 low52w
         );
+
+        persistService.saveMinuteData(dto.getSymbol(), metrics);
+        log.info("[TRANSFORM] {} 1분 데이터 계산 완료 -> {}", dto.getSymbol(), metrics);
 
         log.info("[1분 데이터] symbol={}, price={}, volume={}",
                 dto.getSymbol(), dto.getPrice(), dto.getVolume());
