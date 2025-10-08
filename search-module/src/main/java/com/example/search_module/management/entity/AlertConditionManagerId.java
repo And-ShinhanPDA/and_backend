@@ -1,4 +1,4 @@
-package com.example.search_module.management.domain;
+package com.example.search_module.management.entity;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;
