@@ -18,14 +18,16 @@ public class AlertController {
     private final AlertService alertService;
 
     @GetMapping
-    public List<AlertResponse> getAlerts(
+    public ResponseEntity<ApiResponse<List<AlertResponse>>> getAlerts(
             @RequestParam(name = "stockCode", required = false) String stockCode,
             @RequestParam(name = "enabled", required = false) Boolean enabled,
             @RequestHeader("Authorization") String authHeader
     ) {
         Long userId = JwtSimpleParser.extractUserId(authHeader);
 
-        return alertService.getAlerts(userId, stockCode, enabled);
+        List<AlertResponse> response = alertService.getAlerts(userId, stockCode, enabled);
+
+        return ResponseEntity.ok(ApiResponse.success("알림 리스트를 성공적으로 조회했습니다.", response));
     }
 
     @PostMapping
