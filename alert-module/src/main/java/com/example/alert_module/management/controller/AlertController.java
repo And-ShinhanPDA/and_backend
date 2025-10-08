@@ -5,17 +5,27 @@ import com.example.alert_module.common.util.JwtSimpleParser;
 import com.example.alert_module.management.dto.AlertCreateRequest;
 import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.service.AlertService;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/alerts")
+@RequiredArgsConstructor
 public class AlertController {
 
     private final AlertService alertService;
 
-    public AlertController(AlertService alertService) {
-        this.alertService = alertService;
+    @GetMapping
+    public List<AlertResponse> getAlerts(
+            @RequestParam(name = "stockCode", required = false) String stockCode,
+            @RequestParam(name = "enabled", required = false) Boolean enabled,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        Long userId = JwtSimpleParser.extractUserId(authHeader);
+
+        return alertService.getAlerts(userId, stockCode, enabled);
     }
 
     @PostMapping

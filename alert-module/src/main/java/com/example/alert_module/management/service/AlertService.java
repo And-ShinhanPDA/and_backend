@@ -5,23 +5,44 @@ import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
 import jakarta.transaction.Transactional;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class AlertService {
 
     private final AlertRepository alertRepository;
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
 
-    public AlertService(AlertRepository alertRepository,
-                        AlertConditionRepository alertConditionRepository,
-                        AlertConditionManagerRepository alertConditionManagerRepository) {
-        this.alertRepository = alertRepository;
-        this.alertConditionRepository = alertConditionRepository;
-        this.alertConditionManagerRepository = alertConditionManagerRepository;
+    public List<AlertResponse> getAlerts(Long userId, String stockCode, Boolean enabled) {
+        List<Alert> alerts;
+
+        if (stockCode != null && enabled != null) {
+            alerts = alertRepository.findByUserIdAndStockCodeAndIsActived(userId, stockCode, enabled);
+        } else if (stockCode != null) {
+            alerts = alertRepository.findByUserIdAndStockCode(userId, stockCode);
+        } else if (enabled != null) {
+            alerts = alertRepository.findByUserIdAndIsActived(userId, enabled);
+        } else {
+            alerts = alertRepository.findByUserId(userId);
+        }
+
+        return alerts.stream()
+                .map(alert -> new AlertResponse(
+                        alert.getId(),
+                        alert.getStockCode(),
+                        alert.getTitle(),
+                        alert.getIsActived(),
+                        alert.getCreatedAt(),
+                        alert.getUpdatedAt(),
+                        List.of()
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional
