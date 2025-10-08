@@ -4,10 +4,13 @@ package com.example.user_module.auth.controller;
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
 import com.example.user_module.auth.dto.request.AuthReq;
+import com.example.user_module.auth.dto.response.AuthRes;
 import com.example.user_module.auth.service.AuthService;
 import com.example.user_module.common.security.jwt.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -36,9 +40,23 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthReq.loginReq loginReq) {
+        AuthRes.loginRes loginData = authService.login(loginReq);
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", loginData.refreshToken())
+                .maxAge(14 * 24 * 60 * 60)
+                .path("/")
+                .secure(true)
+                .httpOnly(true)
+                .build();
+
         return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(
-                        ResponseCode.SUCCESS_LOGIN, authService.login(loginReq)
+                        ResponseCode.SUCCESS_LOGIN,
+                        Map.of(
+                                "accessToken", loginData.accessToken(),
+                                "refreshTokenId", loginData.refreshTokenId()
+                        )
                 ));
     }
 
