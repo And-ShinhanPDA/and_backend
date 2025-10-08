@@ -3,7 +3,9 @@ package com.example.user_module.common.security.jwt.service;
 import com.example.common_service.exception.AuthException;
 import com.example.common_service.response.ResponseCode;
 import com.example.user_module.auth.entity.UserEntity;
+import com.example.user_module.common.security.jwt.JwtProvider;
 import com.example.user_module.common.security.jwt.domain.RefreshToken;
+import com.example.user_module.common.security.jwt.dto.RefreshReq;
 import com.example.user_module.common.security.jwt.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtProvider jwtProvider;
 
     @Override
     public RefreshToken save(UserEntity user, String token, LocalDateTime expiryAt) {
@@ -34,15 +37,23 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 
     @Override
-    public RefreshToken validate(UUID refreshTokenId) {
-        RefreshToken stored = refreshTokenRepository.findById(refreshTokenId)
+    public Long validateAndGetUserId(UUID refreshTokenId, String refreshTokenFromCookie) {
+        RefreshToken storedToken = refreshTokenRepository.findById(refreshTokenId)
                 .orElseThrow(() -> new AuthException(ResponseCode.REFRESH_TOKEN_NOT_FOUND));
 
-        if (stored.getExpiryAt().isBefore(LocalDateTime.now())) {
+        if (storedToken.getExpiryAt().isBefore(LocalDateTime.now())) {
             throw new AuthException(ResponseCode.EXPIRED_REFRESH_TOKEN);
         }
 
-        return stored;
+        if (!storedToken.getToken().equals(refreshTokenFromCookie)) {
+            throw new AuthException(ResponseCode.INVALID_REFRESH_TOKEN);
+        }
+
+        if (!jwtProvider.validateToken(refreshTokenFromCookie)) {
+            throw new AuthException(ResponseCode.INVALID_REFRESH_TOKEN);
+        }
+
+        return storedToken.getUser().getId();
     }
 
     @Override

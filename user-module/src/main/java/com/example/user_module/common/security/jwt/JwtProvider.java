@@ -18,30 +18,22 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtProvider {
+    private final JwtProperties jwtProperties;
+    private Key key;// Refresh Token 만료 (예: 7일)
 
-    @Value("${jwt.secret}")
-    private String secretKey;
-    private Key key;
-
-    @Value("${jwt.access-expiration-time}")
-    private long accessExpirationTime;   // Access Token 만료 (예: 15분)
-
-    @Value("${jwt.refresh-expiration-time}")
-    private long refreshExpirationTime;  // Refresh Token 만료 (예: 7일)
 
     @PostConstruct
     protected void init() {
-        byte[] secretKeyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] secretKeyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
         key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
     public String generateAccessToken(Long id) {
-        Claims claims = Jwts.claims().setSubject(String.valueOf(id));
         Date now = new Date();
         return Jwts.builder()
-                .setClaims(claims)
+                .setSubject(String.valueOf(id))
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessExpirationTime))
+                .setExpiration(new Date(now.getTime() + jwtProperties.getAccessExpirationTime()))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -52,7 +44,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + refreshExpirationTime))
+                .setExpiration(new Date(now.getTime() + jwtProperties.getRefreshExpirationTime()))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -107,7 +99,18 @@ public class JwtProvider {
 
     // refresh 토큰 만료 시간 반환
     public Long getRefreshExpirationTime() {
-        return refreshExpirationTime;
+        return jwtProperties.getRefreshExpirationTime();
     }
 
+    // JwtProvider.java 내부에 추가할 테스트용 메서드 예시
+    public String createToken(String subject, Date expiryDate) {
+        Date now = new Date();
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate) // 만료 시간을 직접 설정
+                // ✅ 수정된 코드: init()에서 생성한 key 객체 사용
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
 }
