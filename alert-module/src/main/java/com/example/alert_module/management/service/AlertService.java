@@ -26,7 +26,6 @@ public class AlertService {
 
     @Transactional
     public AlertResponse createAlert(Long userId, AlertCreateRequest request) {
-        // 1️⃣ Alert 생성
         Alert alert = new Alert();
         alert.setUserId(userId);
         alert.setTitle(request.title());
@@ -36,14 +35,12 @@ public class AlertService {
         alert.setIsConditionSearch(false);
         alertRepository.save(alert);
 
-        // 2️⃣ AlertCondition 조회
         Set<String> indicators = new HashSet<>();
         for (var c : request.conditions()) indicators.add(c.indicator());
         List<AlertCondition> condList = alertConditionRepository.findByIndicatorIn(indicators);
         Map<String, AlertCondition> condMap = new HashMap<>();
         for (var ac : condList) condMap.put(ac.getIndicator(), ac);
 
-        // 3️⃣ AlertConditionManager 저장
         List<AlertResponse.ConditionResponse> conditionResponses = new ArrayList<>();
 
         for (var c : request.conditions()) {
@@ -62,7 +59,7 @@ public class AlertService {
                     new AlertResponse.ConditionResponse(
                             cond.getId(),
                             cond.getIndicator(),
-                            null, // operator 추가 예정
+                            null,
                             c.threshold(),
                             cond.getDescription()
                     )
@@ -74,8 +71,8 @@ public class AlertService {
                 alert.getStockCode(),
                 alert.getTitle(),
                 alert.getIsActived(),
-                alert.getCreatedAt(),   // → 엔티티에 createdAt 필드가 없다면 @PrePersist 추가
-                alert.getUpdatedAt(),   // → updatedAt 필드도 @PreUpdate로 관리
+                alert.getCreatedAt(),
+                alert.getUpdatedAt(),
                 conditionResponses
         );
     }
