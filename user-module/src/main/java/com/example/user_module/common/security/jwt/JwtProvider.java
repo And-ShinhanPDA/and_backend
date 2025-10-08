@@ -102,14 +102,13 @@ public class JwtProvider {
         return jwtProperties.getRefreshExpirationTime();
     }
 
-    // JwtProvider.java 내부에 추가할 테스트용 메서드 예시
-    public String createToken(String subject, Date expiryDate) {
+    public String generateExpiredToken(Long userId) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(subject)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate) // 만료 시간을 직접 설정
-                // ✅ 수정된 코드: init()에서 생성한 key 객체 사용
+                .setClaims(claims)
+                .setIssuedAt(new Date(now.getTime() - 10_000)) // 10초 전 발급
+                .setExpiration(new Date(now.getTime() - 5_000)) // 5초 전에 만료
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
