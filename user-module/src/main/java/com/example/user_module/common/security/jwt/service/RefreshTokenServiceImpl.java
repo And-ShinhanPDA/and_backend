@@ -42,6 +42,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .orElseThrow(() -> new AuthException(ResponseCode.REFRESH_TOKEN_NOT_FOUND));
 
         if (storedToken.getExpiryAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.deleteById(refreshTokenId);
             throw new AuthException(ResponseCode.EXPIRED_REFRESH_TOKEN);
         }
 

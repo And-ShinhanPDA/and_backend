@@ -57,8 +57,7 @@ public class SecurityConfig {
                         authorize.requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/**"
+                                "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         // DefaultExceptionHandler 처리를 위한 error PermitAll
