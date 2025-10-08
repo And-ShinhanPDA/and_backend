@@ -2,6 +2,7 @@ package com.example.search_module.management.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,11 +22,19 @@ public class Alert {
     private Long alertId;
 
     private Long userId;
+
     private Boolean isActived;
+
     private String title;
+
     private String stockCode;
+
+    @Value("false")
     private Boolean isTriggered;
+
+    @Value("true")
     private Boolean isConditionSearch;
+
     private LocalDateTime lastNotifiedAt;
 
     @OneToMany(mappedBy = "alert", cascade = CascadeType.ALL, orphanRemoval = true)
