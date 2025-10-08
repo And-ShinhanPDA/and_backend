@@ -4,6 +4,7 @@ import com.example.alert_module.common.dto.ApiResponse;
 import com.example.alert_module.common.util.JwtSimpleParser;
 import com.example.alert_module.management.dto.AlertCreateRequest;
 import com.example.alert_module.management.dto.AlertResponse;
+import com.example.alert_module.management.dto.AlertUpdateRequest;
 import com.example.alert_module.management.service.AlertService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,19 @@ public class AlertController {
 
         return ResponseEntity.ok(ApiResponse.success("알림을 성공적으로 삭제했습니다.", null));
     }
+
+    @PatchMapping("/{alertId}")
+    public ResponseEntity<ApiResponse<AlertResponse>> updateAlert(
+            @PathVariable Long alertId,
+            @RequestBody AlertUpdateRequest request,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        Long userId = JwtSimpleParser.extractUserId(authHeader);
+
+        AlertResponse response = alertService.updateAlert(userId, alertId, request);
+
+        return ResponseEntity.ok(ApiResponse.success("알림이 성공적으로 수정되었습니다.", response));
+    }
+
 
 }

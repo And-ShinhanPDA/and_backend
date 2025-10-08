@@ -2,6 +2,7 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.management.dto.AlertCreateRequest;
 import com.example.alert_module.management.dto.AlertResponse;
+import com.example.alert_module.management.dto.AlertUpdateRequest;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
 import jakarta.transaction.Transactional;
@@ -137,6 +138,64 @@ public class AlertService {
 
         alertRepository.delete(alert);
     }
+
+    @Transactional
+    public AlertResponse updateAlert(Long userId, Long alertId, AlertUpdateRequest request) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+
+        if (!alert.getUserId().equals(userId)) {
+            throw new IllegalStateException("본인 소유의 알림만 수정할 수 있습니다.");
+        }
+
+        // ✅ 1. 알림 기본 정보 덮어쓰기
+        alert.setTitle(request.title());
+        alert.setStockCode(request.stockCode());
+        alert.setIsActived(request.isActive());
+        alertRepository.save(alert);
+
+        // ✅ 2. 기존 조건 전부 삭제 후 새로 등록
+        alertConditionManagerRepository.deleteAllByAlertId(alertId);
+
+        Set<String> indicators = request.conditions().stream()
+                .map(AlertUpdateRequest.ConditionRequest::indicator)
+                .collect(Collectors.toSet());
+
+        List<AlertCondition> condList = alertConditionRepository.findByIndicatorIn(indicators);
+        Map<String, AlertCondition> condMap = condList.stream()
+                .collect(Collectors.toMap(AlertCondition::getIndicator, c -> c));
+
+        List<AlertResponse.ConditionResponse> conditionResponses = new ArrayList<>();
+        for (var c : request.conditions()) {
+            AlertCondition cond = condMap.get(c.indicator());
+            if (cond == null)
+                throw new IllegalArgumentException("등록되지 않은 indicator: " + c.indicator());
+
+            AlertConditionManager acm = AlertConditionManager.of(alert, cond, c.threshold(), c.threshold2());
+            alertConditionManagerRepository.save(acm);
+
+            conditionResponses.add(new AlertResponse.ConditionResponse(
+                    cond.getId(),
+                    cond.getIndicator(),
+                    null,
+                    c.threshold(),
+                    c.threshold2(),
+                    cond.getDescription()
+            ));
+        }
+
+        // ✅ 3. 최종 응답 구성
+        return new AlertResponse(
+                alert.getId(),
+                alert.getStockCode(),
+                alert.getTitle(),
+                alert.getIsActived(),
+                alert.getCreatedAt(),
+                alert.getUpdatedAt(),
+                conditionResponses
+        );
+    }
+
 
 
 }
