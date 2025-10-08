@@ -39,6 +39,18 @@ public class AlertController {
 
         AlertResponse response = alertService.createAlert(userId, request);
 
-        return ResponseEntity.ok(ApiResponse.success("알림 생성 성공", response));
+        return ResponseEntity.ok(ApiResponse.success("알림을 성공적으로 생성했습니다.", response));
     }
+
+    @DeleteMapping("/{alertId}")
+    public ResponseEntity<ApiResponse<String>> deleteAlert(
+            @PathVariable Long alertId,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        Long userId = JwtSimpleParser.extractUserId(authHeader);
+        alertService.deleteAlert(userId, alertId);
+
+        return ResponseEntity.ok(ApiResponse.success("알림을 성공적으로 삭제했습니다.", null));
+    }
+
 }

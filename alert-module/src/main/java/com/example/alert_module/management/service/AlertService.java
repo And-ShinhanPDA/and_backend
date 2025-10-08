@@ -124,4 +124,19 @@ public class AlertService {
         );
     }
 
+    @Transactional
+    public void deleteAlert(Long userId, Long alertId) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+
+        if (!alert.getUserId().equals(userId)) {
+            throw new IllegalStateException("본인 소유의 알림만 삭제할 수 있습니다.");
+        }
+
+        alertConditionManagerRepository.deleteAllByAlertId(alertId);
+
+        alertRepository.delete(alert);
+    }
+
+
 }
