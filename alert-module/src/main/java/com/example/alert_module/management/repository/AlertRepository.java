@@ -1,6 +1,8 @@
 package com.example.alert_module.management.repository;
 
 import com.example.alert_module.management.entity.Alert;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,4 +11,5 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findByUserIdAndStockCode(Long userId, String stockCode);
     List<Alert> findByUserIdAndIsActived(Long userId, Boolean isActived);
     List<Alert> findByUserIdAndStockCodeAndIsActived(Long userId, String stockCode, Boolean isActived);
+    List<Alert> findAllByUserIdAndIsTriggeredTrueAndLastNotifiedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
 }
