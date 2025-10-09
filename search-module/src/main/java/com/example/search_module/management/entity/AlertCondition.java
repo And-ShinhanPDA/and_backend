@@ -16,10 +16,13 @@ public class AlertCondition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long alertConditionId;
+    @Column(name = "alert_condition_id")
+    private Long id;
 
-    private String indicator;    // e.g. "RSI", "SMA"
-    private String operator;     // e.g. ">", "<", ">=", "<="
+    private String category;
+    private String dataScope;    // "minute" or "daily"
+    private String valueType;    // ex) "rsi14", "price"
+    private String indicator;    // ex) "RSI_OVER"
     private String description;
     private LocalDateTime createdAt;
 }

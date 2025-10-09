@@ -54,12 +54,6 @@ project(':data-process-module') {
 	}
 }
 
-project(':search-module') {
-	dependencies {
-		implementation project(':common-module')
-	}
-}
-
 project(':user-module') {project(':user-module') {
 	dependencies {
 		implementation project(':common-module')

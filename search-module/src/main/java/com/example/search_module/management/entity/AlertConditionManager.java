@@ -16,12 +16,15 @@ public class AlertConditionManager {
     private AlertConditionManagerId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("alertId")
+    @MapsId("alertId") // ⚠️ 필드명과 정확히 맞춰야 함
+    @JoinColumn(name = "alert_id")
     private Alert alert;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("alertConditionId")
+    @MapsId("alertConditionId") // ⚠️ 동일하게 맞춰야 함
+    @JoinColumn(name = "alert_condition_id")
     private AlertCondition alertCondition;
 
-    private Double threshold; // 예: RSI > 70
+    private Double threshold;
+    private Double threshold2;
 }

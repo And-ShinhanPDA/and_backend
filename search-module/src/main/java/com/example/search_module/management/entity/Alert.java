@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
 @Table(name = "alert")
 @Getter
@@ -19,24 +20,27 @@ public class Alert {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long alertId;
+    @Column(name = "alert_id")
+    private Long id;
 
     private Long userId;
 
-    private Boolean isActived;
+    @Builder.Default
+    private Boolean isActived = true;
 
     private String title;
 
     private String stockCode;
 
-    @Value("false")
-    private Boolean isTriggered;
+    @Builder.Default
+    private Boolean isTriggered = false;
 
-    @Value("true")
-    private Boolean isConditionSearch;
+    @Builder.Default
+    private Boolean isConditionSearch = true;
 
     private LocalDateTime lastNotifiedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "alert", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AlertConditionManager> conditionManagers = new ArrayList<>();
 }
