@@ -1,6 +1,9 @@
 package com.example.common_service.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -10,9 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-    /**
-     * Alert 모듈용 Swagger 그룹
-     */
     @Bean
     public GroupedOpenApi alertApi() {
         return GroupedOpenApi.builder()
@@ -21,9 +21,6 @@ public class SwaggerConfig {
                 .build();
     }
 
-    /**
-     * User 모듈용 Swagger 그룹
-     */
     @Bean
     public GroupedOpenApi userApi() {
         return GroupedOpenApi.builder()
@@ -32,26 +29,31 @@ public class SwaggerConfig {
                 .build();
     }
 
-    /**
-     * Search 모듈용 Swagger 그룹 (있을 경우)
-     */
     @Bean
-    public GroupedOpenApi searchApi() {
+    public GroupedOpenApi dataApi() {
         return GroupedOpenApi.builder()
-                .group("Search")
-                .packagesToScan("com.example.search_module")
+                .group("Data")
+                .packagesToScan("com.example.data_process_module")
                 .build();
     }
 
-    /**
-     * 공통 API 정보
-     */
     @Bean
     public OpenAPI baseOpenAPI() {
+        final String securitySchemeName = "BearerAuth";
+
         return new OpenAPI()
                 .info(new Info()
                         .title("AND Backend API Docs")
-                        .description("Alert, User, Search 등 모듈 통합 API 명세서")
-                        .version("v1.0.0"));
+                        .description("Alert, User, Data 모듈 통합 API 명세서")
+                        .version("v1.0.0"))
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .components(new Components().addSecuritySchemes(securitySchemeName,
+                        new SecurityScheme()
+                                .name(securitySchemeName)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("JWT 토큰을 입력하세요. (형식: Bearer <token>)")
+                ));
     }
 }
