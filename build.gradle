@@ -45,6 +45,7 @@ allprojects {
 project(':alert-module') {
 	dependencies {
 		implementation project(':common-module')
+		implementation project(':user-module')
 	}
 }
 
@@ -54,7 +55,7 @@ project(':data-process-module') {
 	}
 }
 
-project(':user-module') {project(':user-module') {
+project(':user-module') {
 	dependencies {
 		implementation project(':common-module')
 
@@ -68,6 +69,6 @@ project(':user-module') {project(':user-module') {
 		implementation 'org.springframework.security:spring-security-test'
 		runtimeOnly 'org.junit.platform:junit-platform-launcher'
 	}
-}
+
 
 }
