@@ -13,6 +13,8 @@ public enum ResponseCode {
     SUCCESS_LOGOUT("SUCCESS_LOGOUT", "로그아웃에 성공하였습니다.", HttpStatus.OK),
     SUCCESS_REISSUE("SUCCESS_REISSUE", "토큰 재발급에 성공하였습니다.", HttpStatus.OK),
 
+    SUCCESS_TODAY_ALERT("SUCCESS_TODAY_ALERT", "오늘 울린 알림 조회에 성공하였습니다.", HttpStatus.OK),
+
 
     USER_EXIST("USER_EXIST", "이미 존재하는 회원이 있습니다.", HttpStatus.BAD_REQUEST),
     INVALID_INPUT("INVALID_INPUT", "입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),

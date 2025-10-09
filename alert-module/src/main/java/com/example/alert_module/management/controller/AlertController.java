@@ -5,7 +5,6 @@ import com.example.alert_module.common.util.JwtSimpleParser;
 import com.example.alert_module.management.dto.AlertCreateRequest;
 import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.dto.AlertUpdateRequest;
-import com.example.alert_module.management.service.AlertQueryService;
 import com.example.alert_module.management.service.AlertService;
 import java.util.List;
 
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class AlertController {
 
     private final AlertService alertService;
-    private final AlertQueryService alertQueryService;
 
 
     @GetMapping
@@ -70,12 +68,6 @@ public class AlertController {
         AlertResponse response = alertService.updateAlert(userId, alertId, request);
 
         return ResponseEntity.ok(ApiResponse.success("알림이 성공적으로 수정되었습니다.", response));
-    }
-
-    /** 오늘 울린(트리거된) 알림 조회 */
-    @GetMapping("/today/triggered")
-    public ResponseEntity<?> getTriggeredAlerts(@AuthUser Long userId) {
-        return ResponseEntity.ok(alertQueryService.getTriggeredToday(userId));
     }
 
 }
