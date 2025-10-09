@@ -4,6 +4,7 @@ import com.example.alert_module.common.dto.ApiResponse;
 import com.example.alert_module.management.dto.AlertCreateRequest;
 import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.dto.AlertUpdateRequest;
+import com.example.alert_module.management.dto.ToggleRequest;
 import com.example.alert_module.management.service.AlertService;
 import com.example.user_module.common.security.AuthUser;
 import java.util.List;
@@ -19,6 +20,15 @@ public class AlertController {
 
     private final AlertService alertService;
 
+    @PatchMapping("/{alertId}/toggle")
+    public ResponseEntity<ApiResponse<String>> toggleAlert(
+            @PathVariable Long alertId,
+            @RequestBody ToggleRequest request,
+            @AuthUser Long userId
+    ) {
+        alertService.toggleAlert(userId, alertId, request.isActived());
+        return ResponseEntity.ok(ApiResponse.success("알림 상태가 변경되었습니다."));
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<AlertResponse>>> getAlerts(
