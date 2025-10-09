@@ -23,10 +23,13 @@ public class JwtProvider {
 
 
     @PostConstruct
-    protected void init() {
-        byte[] secretKeyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
-        key = Keys.hmacShaKeyFor(secretKeyBytes);
+    public void init() {
+        if (jwtProperties.getSecret() == null || jwtProperties.getSecret().isBlank()) {
+            throw new IllegalStateException("❌ JWT_SECRET is null — check .env import in alert-module!");
+        }
+        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getSecret()));
     }
+
 
     public String generateAccessToken(Long id) {
         Date now = new Date();

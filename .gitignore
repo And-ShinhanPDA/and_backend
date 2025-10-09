@@ -41,4 +41,4 @@ out/
 **/application.yml
 **/application.properties
 
-.env
+common-module/.env
