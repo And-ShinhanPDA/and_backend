@@ -1,6 +1,9 @@
 package com.example.alert_module.management.service;
 
+import com.example.alert_module.common.exception.CustomException;
+import com.example.alert_module.common.exception.ErrorCode;
 import com.example.alert_module.management.dto.AlertCreateRequest;
+import com.example.alert_module.management.dto.AlertDetailResponse;
 import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.dto.AlertUpdateRequest;
 import com.example.alert_module.management.repository.*;
@@ -20,6 +23,42 @@ public class AlertService {
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
 
+    @Transactional
+    public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
+
+        if (!alert.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        List<AlertConditionManager> managers =
+                alertConditionManagerRepository.findByAlertId(alertId);
+
+        List<AlertDetailResponse.Condition> conditionResponses = managers.stream()
+                .map(m -> {
+                    AlertCondition cond = m.getAlertCondition();
+                    return new AlertDetailResponse.Condition(
+                            cond.getCategory(),
+                            cond.getIndicator(),
+                            m.getThreshold(),
+                            m.getThreshold2(),
+                            cond.getDescription()
+                    );
+                })
+                .toList();
+
+        return new AlertDetailResponse(
+                alert.getId(),
+                alert.getTitle(),
+                alert.getStockCode(),
+                alert.getIsActived(),
+                alert.getCreatedAt(),
+                alert.getUpdatedAt(),
+                conditionResponses
+        );
+    }
+
     public List<AlertResponse> getAlerts(Long userId, String stockCode, Boolean enabled) {
         List<Alert> alerts;
 
@@ -35,14 +74,11 @@ public class AlertService {
 
         if (alerts.isEmpty()) return List.of();
 
-        // ✅ 모든 alertId 한 번에 모으기
         List<Long> alertIds = alerts.stream().map(Alert::getId).toList();
 
-        // ✅ 관련된 AlertConditionManager + AlertCondition 한 번에 조회
         List<AlertConditionManager> managers =
                 alertConditionManagerRepository.findByAlertIdsWithCondition(alertIds);
 
-        // ✅ alertId별로 conditions 매핑
         Map<Long, List<AlertResponse.ConditionResponse>> conditionMap = managers.stream()
                 .collect(Collectors.groupingBy(
                         acm -> acm.getAlert().getId(),
@@ -56,7 +92,6 @@ public class AlertService {
                         ), Collectors.toList())
                 ));
 
-        // ✅ AlertResponse 생성
         return alerts.stream()
                 .map(alert -> new AlertResponse(
                         alert.getId(),
@@ -148,13 +183,11 @@ public class AlertService {
             throw new IllegalStateException("본인 소유의 알림만 수정할 수 있습니다.");
         }
 
-        // ✅ 1. 알림 기본 정보 덮어쓰기
         alert.setTitle(request.title());
         alert.setStockCode(request.stockCode());
         alert.setIsActived(request.isActive());
         alertRepository.save(alert);
 
-        // ✅ 2. 기존 조건 전부 삭제 후 새로 등록
         alertConditionManagerRepository.deleteAllByAlertId(alertId);
 
         Set<String> indicators = request.conditions().stream()
@@ -184,7 +217,6 @@ public class AlertService {
             ));
         }
 
-        // ✅ 3. 최종 응답 구성
         return new AlertResponse(
                 alert.getId(),
                 alert.getStockCode(),
@@ -196,6 +228,17 @@ public class AlertService {
         );
     }
 
+    @Transactional
+    public void toggleAlert(Long userId, Long alertId, boolean isActived) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
 
+        if (!alert.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        alert.setIsActived(isActived);
+        alertRepository.save(alert);
+    }
 
 }
