@@ -2,6 +2,7 @@ package com.example.alert_module.management.controller;
 
 import com.example.alert_module.common.dto.ApiResponse;
 import com.example.alert_module.management.dto.AlertCreateRequest;
+import com.example.alert_module.management.dto.AlertDetailResponse;
 import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.dto.AlertUpdateRequest;
 import com.example.alert_module.management.dto.ToggleRequest;
@@ -19,6 +20,15 @@ import org.springframework.web.bind.annotation.*;
 public class AlertController {
 
     private final AlertService alertService;
+
+    @GetMapping("/{alertId}")
+    public ResponseEntity<ApiResponse<AlertDetailResponse>> getAlertDetail(
+            @PathVariable Long alertId,
+            @AuthUser Long userId
+    ) {
+        AlertDetailResponse response = alertService.getAlertDetail(userId, alertId);
+        return ResponseEntity.ok(ApiResponse.success("알림을 성공적으로 조회했습니다.",response));
+    }
 
     @PatchMapping("/{alertId}/toggle")
     public ResponseEntity<ApiResponse<String>> toggleAlert(

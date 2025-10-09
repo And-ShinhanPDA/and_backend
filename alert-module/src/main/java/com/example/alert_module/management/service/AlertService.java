@@ -3,6 +3,7 @@ package com.example.alert_module.management.service;
 import com.example.alert_module.common.exception.CustomException;
 import com.example.alert_module.common.exception.ErrorCode;
 import com.example.alert_module.management.dto.AlertCreateRequest;
+import com.example.alert_module.management.dto.AlertDetailResponse;
 import com.example.alert_module.management.dto.AlertResponse;
 import com.example.alert_module.management.dto.AlertUpdateRequest;
 import com.example.alert_module.management.repository.*;
@@ -21,6 +22,42 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
+
+    @Transactional
+    public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
+
+        if (!alert.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        List<AlertConditionManager> managers =
+                alertConditionManagerRepository.findByAlertId(alertId);
+
+        List<AlertDetailResponse.Condition> conditionResponses = managers.stream()
+                .map(m -> {
+                    AlertCondition cond = m.getAlertCondition();
+                    return new AlertDetailResponse.Condition(
+                            cond.getCategory(),
+                            cond.getIndicator(),
+                            m.getThreshold(),
+                            m.getThreshold2(),
+                            cond.getDescription()
+                    );
+                })
+                .toList();
+
+        return new AlertDetailResponse(
+                alert.getId(),
+                alert.getTitle(),
+                alert.getStockCode(),
+                alert.getIsActived(),
+                alert.getCreatedAt(),
+                alert.getUpdatedAt(),
+                conditionResponses
+        );
+    }
 
     public List<AlertResponse> getAlerts(Long userId, String stockCode, Boolean enabled) {
         List<Alert> alerts;

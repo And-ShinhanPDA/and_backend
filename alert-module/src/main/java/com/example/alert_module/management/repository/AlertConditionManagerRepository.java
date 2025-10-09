@@ -16,4 +16,9 @@ public interface AlertConditionManagerRepository
     List<AlertConditionManager> findByAlertIdsWithCondition(@Param("alertIds") List<Long> alertIds);
 
     void deleteAllByAlertId(Long alertId);
+
+    @Query("SELECT m FROM AlertConditionManager m " +
+            "JOIN FETCH m.alertCondition " +
+            "WHERE m.alert.id = :alertId")
+    List<AlertConditionManager> findByAlertId(@Param("alertId") Long alertId);
 }
