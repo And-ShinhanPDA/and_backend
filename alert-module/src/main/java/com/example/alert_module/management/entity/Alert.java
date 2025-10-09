@@ -1,6 +1,9 @@
 package com.example.alert_module.management.entity;
 
+import com.example.alert_module.history.entity.AlertHistory;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,6 +49,9 @@ public class Alert {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "alert", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<AlertHistory> alertHistories = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
