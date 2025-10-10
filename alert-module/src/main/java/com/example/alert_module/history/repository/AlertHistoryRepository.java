@@ -49,4 +49,5 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
             @Param("end") LocalDateTime end
     );
 
+    Long countByAlertIdIn(List<Long> alertIds);
 }

@@ -50,4 +50,10 @@ public class AlertHistoryController {
     }
 
 
+    @GetMapping("/heatmap")
+    public ResponseEntity<?> getHeatMap(@AuthUser Long userId) {
+        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_ALERT_HEATMAP, alertHistoryService.getHeatMap(userId)));
+    }
+
+
 }
