@@ -14,7 +14,8 @@ public enum ResponseCode {
     SUCCESS_REISSUE("SUCCESS_REISSUE", "토큰 재발급에 성공하였습니다.", HttpStatus.OK),
 
     SUCCESS_TODAY_ALERT("SUCCESS_TODAY_ALERT", "오늘 울린 알림 조회에 성공하였습니다.", HttpStatus.OK),
-    SUCCESS_ALERT_HISTORY("SUCCESS_ALERT_HISTORY", "알림 히스토리 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_ALERT_HISTORY_ALL("SUCCESS_ALERT_HISTORY_ALL", "알림 히스토리 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_ALERT_HISTORY_PERIOD("SUCCESS_ALERT_HISTORY_PERIOD", "알림 히스토리 특정 기간 조회에 성공하였습니다.", HttpStatus.OK),
 
     SUCCESS_GET_ALERTED_COMPANIES("SUCCESS_GET_ALERTED_COMPANIES", "알림 설정한 기업 조회에 성공하였습니다.", HttpStatus.OK),
     SUCCESS_GET_ALL_COMPANIES("SUCCESS_GET_ALERTED_COMPANIES", "전체 기업 조회에 성공하였습니다.", HttpStatus.OK),
