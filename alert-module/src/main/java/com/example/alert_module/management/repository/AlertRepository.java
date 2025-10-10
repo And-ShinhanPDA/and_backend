@@ -15,14 +15,24 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findByUserId(Long userId);
     List<Alert> findByUserIdAndStockCode(Long userId, String stockCode);
     List<Alert> findByUserIdAndIsActived(Long userId, Boolean isActived);
-    List<Alert> findByUserIdAndStockCodeAndIsActived(Long userId, String stockCode, Boolean isActived);
+    List<Alert> findByUserIdAndStockCodeAndIsActived(Long userId, String stockCode, boolean isActived);
+
     @Query("SELECT DISTINCT new com.example.alert_module.management.dto.CompanyRes(a.stockCode, c.name) " +
             "FROM Alert a INNER JOIN Company c ON a.stockCode = c.stockCode " +
             "WHERE a.userId = :userId")
     List<CompanyRes> findDistinctCompaniesByUserId(Long userId);
+
     @Query("SELECT a.id FROM Alert a WHERE a.userId = :userId AND a.stockCode = :stockCode")
     List<Long> findAlertIdsByUserIdAndStockCode(@Param("userId") Long userId, @Param("stockCode") String stockCode);
+
     @Modifying
     @Query("DELETE FROM Alert a WHERE a.id IN :alertIds")
     void deleteByAlertIds(@Param("alertIds") List<Long> alertIds);
+
+    @Modifying
+    @Query("UPDATE Alert a SET a.isActived = :isActived " +
+            "WHERE a.userId = :userId AND a.stockCode = :stockCode")
+    void updateIsActivedByUserIdAndStockCode(@Param("userId") Long userId,
+                                             @Param("stockCode") String stockCode,
+                                             @Param("isActived") boolean isActived);
 }

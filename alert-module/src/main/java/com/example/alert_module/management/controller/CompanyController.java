@@ -1,6 +1,7 @@
 package com.example.alert_module.management.controller;
 
 import com.example.alert_module.management.dto.CompanyRes;
+import com.example.alert_module.management.dto.ToggleRequest;
 import com.example.alert_module.management.service.CompanyService;
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
@@ -36,6 +37,12 @@ public class CompanyController {
                                                 @PathVariable String stockCode) {
         companyService.deleteAlertCompany(userId, stockCode);
         return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_DELETE_ALERT_COMPANY, stockCode));
+    }
+
+    @PatchMapping("/{stockCode}/toggle")
+    public ResponseEntity<?> toggleAlertCompany(@AuthUser Long userId, @PathVariable String stockCode, @RequestBody ToggleRequest toggleRequest) {
+        companyService.toggleAlertCompany(userId, stockCode, toggleRequest.isActived());
+        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_TOGGLE_ALERT_COMPANY, stockCode));
     }
 
 }

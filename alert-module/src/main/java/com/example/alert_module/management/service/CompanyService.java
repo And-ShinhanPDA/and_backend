@@ -2,6 +2,8 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.history.repository.AlertHistoryRepository;
 import com.example.alert_module.management.dto.CompanyRes;
+import com.example.alert_module.management.dto.ToggleRequest;
+import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
 import com.example.alert_module.management.repository.AlertRepository;
 import com.example.alert_module.management.repository.CompanyRepository;
@@ -32,13 +34,27 @@ public class CompanyService {
 
     @Transactional
     public void deleteAlertCompany(Long userId, String stockCode) {
+        if (!companyRepository.existsById(stockCode)) {
+            throw new AlertException(ResponseCode.STOCK_NOT_FOUND);
+        }
+
         List<Long> alertIds = alertRepository.findAlertIdsByUserIdAndStockCode(userId, stockCode);
 
         if (alertIds.isEmpty()) {
             throw new AlertException(ResponseCode.NO_EXIST_ALERT);
         }
+
         alertHistoryRepository.deleteByAlertIds(alertIds);
         alertConditionManagerRepository.deleteByAlertIds(alertIds);
         alertRepository.deleteByAlertIds(alertIds);
+    }
+
+    @Transactional
+    public void toggleAlertCompany(Long userId, String stockCode, boolean isActived) {
+        if (!companyRepository.existsById(stockCode)) {
+            throw new AlertException(ResponseCode.STOCK_NOT_FOUND);
+        }
+
+        alertRepository.updateIsActivedByUserIdAndStockCode(userId, stockCode, isActived);
     }
 }
