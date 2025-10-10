@@ -11,4 +11,5 @@ public interface PresetRepository extends JpaRepository<Preset, Long> {
 
     List<Preset> findByUserId(Long userId);
     List<Preset> findByUserIdAndTitleContaining(Long userId, String keyword);
+    List<Preset> findByUserIdIn(List<Long> userIds);
 }

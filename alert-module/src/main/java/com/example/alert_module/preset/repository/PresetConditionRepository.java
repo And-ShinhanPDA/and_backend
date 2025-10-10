@@ -14,4 +14,5 @@ public interface PresetConditionRepository extends JpaRepository<PresetCondition
     List<PresetCondition> findByPreset_Id(Long presetId);
     List<PresetCondition> findByAlertCondition_Id(Long alertConditionId);
     void deleteAllByPreset(Preset preset);
+    List<PresetCondition> findAllByPreset(Preset preset);
 }

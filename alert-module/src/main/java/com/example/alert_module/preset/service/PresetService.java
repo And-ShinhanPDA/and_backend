@@ -79,6 +79,7 @@ public class PresetService {
         return new PresetResponse(
                 preset.getId(),
                 preset.getTitle(),
+                preset.getCategory(),
                 true,
                 preset.getCreatedAt(),
                 preset.getUpdatedAt(),
@@ -109,6 +110,52 @@ public class PresetService {
         presetRepository.delete(preset);
         log.info("✅ [4] Preset 삭제 완료 - presetId={}", presetId);
     }
+
+    @Transactional(readOnly = true)
+    public List<PresetResponse> getAllPresets(Long userId) {
+        log.info("📋 [1] 프리셋 목록 조회 시작 - userId={}", userId);
+
+        List<Long> targetUserIds = List.of(0L, userId);
+        List<Preset> presets = presetRepository.findByUserIdIn(targetUserIds);
+
+        if (presets.isEmpty()) {
+            log.warn("⚠️ [2] 조회된 프리셋이 없습니다.");
+            return List.of();
+        }
+
+        log.info("✅ [2] 조회된 프리셋 수: {}", presets.size());
+
+        List<PresetResponse> responses = new ArrayList<>();
+
+        for (Preset preset : presets) {
+            List<PresetCondition> presetConditions = presetConditionRepository.findAllByPreset(preset);
+
+            List<PresetResponse.ConditionResponse> conditionResponses = presetConditions.stream()
+                    .map(pc -> new PresetResponse.ConditionResponse(
+                            pc.getAlertCondition().getId(),
+                            pc.getAlertCondition().getIndicator(),
+                            null,
+                            pc.getThreshold(),
+                            pc.getAlertCondition().getDescription()
+                    ))
+                    .toList();
+
+            responses.add(new PresetResponse(
+                    preset.getId(),
+                    preset.getTitle(),
+                    preset.getCategory(),
+                    true,
+                    preset.getCreatedAt(),
+                    preset.getUpdatedAt(),
+                    conditionResponses
+            ));
+        }
+
+        log.info("🎯 [3] 프리셋 변환 완료 - {}건", responses.size());
+        return responses;
+    }
+
+
 
 
 }
