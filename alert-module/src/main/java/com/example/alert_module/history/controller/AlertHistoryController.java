@@ -22,6 +22,11 @@ public class AlertHistoryController {
         return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_TODAY_ALERT, alertHistoryService.getTodayHistoryByUser(userId)));
     }
 
+    @GetMapping("/history/{stockCode}")
+    public ResponseEntity<?> getAlertHistories(@AuthUser Long userId, @PathVariable String stockCode) {
+        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_ALERT_HISTORY, alertHistoryService.getAlertHistories(userId, stockCode)));
+    }
+
 
 
 }

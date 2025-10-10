@@ -21,4 +21,15 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
     @Modifying
     @Query("DELETE FROM AlertHistory ah WHERE ah.alert.id IN :alertIds")
     void deleteByAlertIds(@Param("alertIds") List<Long> alertIds);
+
+    @Query("""
+        SELECT h
+        FROM AlertHistory h
+        JOIN h.alert a
+        WHERE a.userId = :userId
+          AND a.stockCode = :stockCode
+        ORDER BY h.createdAt DESC
+    """)
+    List<AlertHistory> findAllByUserIdAndStockCode(@Param("userId") Long userId,
+                                                   @Param("stockCode") String stockCode);
 }
