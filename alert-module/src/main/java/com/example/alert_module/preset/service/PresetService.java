@@ -86,4 +86,29 @@ public class PresetService {
         );
     }
 
+    @Transactional
+    public void deletePreset(Long userId, Long presetId) {
+        log.info("🗑️ [1] 프리셋 삭제 시도 - userId={}, presetId={}", userId, presetId);
+
+        // 1️⃣ 프리셋 조회
+        Preset preset = presetRepository.findById(presetId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프리셋입니다."));
+
+        // 2️⃣ 사용자 검증
+        if (!preset.getUserId().equals(userId)) {
+            log.error("🚫 [2] 삭제 권한 없음 - preset.userId={}, request.userId={}", preset.getUserId(), userId);
+            throw new IllegalStateException("본인 소유의 프리셋만 삭제할 수 있습니다.");
+        }
+
+        // 3️⃣ 연결된 조건 삭제
+        log.info("🧩 [3] 연결된 PresetCondition 삭제 시작 - presetId={}", presetId);
+        presetConditionRepository.deleteAllByPreset(preset);
+        log.info("✅ [3] PresetCondition 삭제 완료");
+
+        // 4️⃣ 프리셋 삭제
+        presetRepository.delete(preset);
+        log.info("✅ [4] Preset 삭제 완료 - presetId={}", presetId);
+    }
+
+
 }
