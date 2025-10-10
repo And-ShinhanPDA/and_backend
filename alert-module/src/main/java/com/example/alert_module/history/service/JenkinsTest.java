@@ -9,7 +9,7 @@ package com.example.alert_module.history.service;
 public class JenkinsTest {
 
     public static void main(String[] args) {
-        System.out.println("🚀 Jenkins auto-deploy test executed successfully!");
+        System.out.println("🚀 Jenkins auto-deploy test executed successfully!!!!!!");
     }
 
 }
