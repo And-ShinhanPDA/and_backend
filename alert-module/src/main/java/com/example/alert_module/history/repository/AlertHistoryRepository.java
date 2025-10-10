@@ -1,7 +1,10 @@
 package com.example.alert_module.history.repository;
 
 import com.example.alert_module.history.entity.AlertHistory;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -15,6 +18,7 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
             LocalDateTime end
     );
 
-    List<AlertHistory> findAllByAlert_Id(Long alertId);
-
+    @Modifying
+    @Query("DELETE FROM AlertHistory ah WHERE ah.alert.id IN :alertIds")
+    void deleteByAlertIds(@Param("alertIds") List<Long> alertIds);
 }

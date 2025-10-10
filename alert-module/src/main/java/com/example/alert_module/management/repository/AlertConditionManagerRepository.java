@@ -5,6 +5,7 @@ import com.example.alert_module.management.entity.AlertConditionManagerId;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface AlertConditionManagerRepository
@@ -21,4 +22,7 @@ public interface AlertConditionManagerRepository
             "JOIN FETCH m.alertCondition " +
             "WHERE m.alert.id = :alertId")
     List<AlertConditionManager> findByAlertId(@Param("alertId") Long alertId);
+    @Modifying
+    @Query("DELETE FROM AlertConditionManager acm WHERE acm.alert.id IN :alertIds")
+    void deleteByAlertIds(@Param("alertIds") List<Long> alertIds);
 }
