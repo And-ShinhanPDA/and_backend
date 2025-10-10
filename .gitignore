@@ -40,3 +40,5 @@ out/
 ### application.properties ##
 **/application.yml
 **/application.properties
+
+.env

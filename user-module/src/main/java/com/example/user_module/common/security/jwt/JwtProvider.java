@@ -18,30 +18,25 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtProvider {
+    private final JwtProperties jwtProperties;
+    private Key key;// Refresh Token 만료 (예: 7일)
 
-    @Value("${jwt.secret}")
-    private String secretKey;
-    private Key key;
-
-    @Value("${jwt.access-expiration-time}")
-    private long accessExpirationTime;   // Access Token 만료 (예: 15분)
-
-    @Value("${jwt.refresh-expiration-time}")
-    private long refreshExpirationTime;  // Refresh Token 만료 (예: 7일)
 
     @PostConstruct
-    protected void init() {
-        byte[] secretKeyBytes = Decoders.BASE64.decode(secretKey);
-        key = Keys.hmacShaKeyFor(secretKeyBytes);
+    public void init() {
+        if (jwtProperties.getSecret() == null || jwtProperties.getSecret().isBlank()) {
+            throw new IllegalStateException("❌ JWT_SECRET is null — check .env import in alert-module!");
+        }
+        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getSecret()));
     }
 
+
     public String generateAccessToken(Long id) {
-        Claims claims = Jwts.claims().setSubject(String.valueOf(id));
         Date now = new Date();
         return Jwts.builder()
-                .setClaims(claims)
+                .setSubject(String.valueOf(id))
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessExpirationTime))
+                .setExpiration(new Date(now.getTime() + jwtProperties.getAccessExpirationTime()))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -52,7 +47,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + refreshExpirationTime))
+                .setExpiration(new Date(now.getTime() + jwtProperties.getRefreshExpirationTime()))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -107,7 +102,17 @@ public class JwtProvider {
 
     // refresh 토큰 만료 시간 반환
     public Long getRefreshExpirationTime() {
-        return refreshExpirationTime;
+        return jwtProperties.getRefreshExpirationTime();
     }
 
+    public String generateExpiredToken(Long userId) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date(now.getTime() - 10_000)) // 10초 전 발급
+                .setExpiration(new Date(now.getTime() - 5_000)) // 5초 전에 만료
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
 }

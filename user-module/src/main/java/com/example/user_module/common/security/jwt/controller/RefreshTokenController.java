@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class RefreshTokenController {
 
@@ -24,12 +24,10 @@ public class RefreshTokenController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody RefreshReq request,
-                                     @AuthUser Long userId) {
-        RefreshToken stored = refreshTokenService.validate(request.refreshTokenId());
+                                     @CookieValue("refreshToken") String refreshToken) {
 
-        if (!stored.getUser().getId().equals(userId)) {
-            throw new AuthException(ResponseCode.UNAUTHORIZED);
-        }
+        // ✅ 서비스에 두 정보를 모두 넘겨 교차 검증
+        Long userId = refreshTokenService.validateAndGetUserId(request.refreshTokenId(), refreshToken);
 
         String newAccessToken = jwtProvider.generateAccessToken(userId);
 
