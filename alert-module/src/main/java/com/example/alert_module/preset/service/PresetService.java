@@ -155,6 +155,77 @@ public class PresetService {
         return responses;
     }
 
+    @Transactional
+    public PresetResponse updatePreset(Long userId, Long presetId, PresetRequest request) {
+        log.info("✏️ [1] 프리셋 수정 시작 - userId={}, presetId={}", userId, presetId);
+
+        // 1️⃣ 프리셋 조회
+        Preset preset = presetRepository.findById(presetId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프리셋입니다."));
+
+        // 2️⃣ 권한 검증
+        if (!preset.getUserId().equals(userId)) {
+            log.error("🚫 [2] 권한 없음 - preset.userId={}, request.userId={}", preset.getUserId(), userId);
+            throw new IllegalStateException("본인 소유의 프리셋만 수정할 수 있습니다.");
+        }
+
+        // 3️⃣ 기존 조건들 삭제
+        log.info("🧩 [3] 기존 PresetCondition 삭제 시작 - presetId={}", presetId);
+        presetConditionRepository.deleteAllByPreset(preset);
+        log.info("✅ [3] 기존 조건 삭제 완료");
+
+        // 4️⃣ 타이틀 및 업데이트 시간 수정
+        preset.setTitle(request.title());
+        preset.setUpdatedAt(LocalDateTime.now());
+        presetRepository.save(preset);
+
+        log.info("🟢 [4] 프리셋 기본정보 수정 완료 - title={}, updatedAt={}", preset.getTitle(), preset.getUpdatedAt());
+
+        // 5️⃣ AlertCondition 조회
+        Set<String> indicators = request.conditions().stream()
+                .map(PresetRequest.ConditionRequest::indicator)
+                .collect(Collectors.toSet());
+        List<AlertCondition> condList = alertConditionRepository.findByIndicatorIn(indicators);
+        Map<String, AlertCondition> condMap = condList.stream()
+                .collect(Collectors.toMap(AlertCondition::getIndicator, c -> c));
+
+        // 6️⃣ 새로운 조건 등록
+        List<PresetResponse.ConditionResponse> conditionResponses = new ArrayList<>();
+
+        for (var c : request.conditions()) {
+            AlertCondition alertCondition = condMap.get(c.indicator());
+            if (alertCondition == null)
+                throw new IllegalArgumentException("등록되지 않은 indicator: " + c.indicator());
+
+            PresetCondition presetCondition = new PresetCondition();
+            presetCondition.setPreset(preset);
+            presetCondition.setAlertCondition(alertCondition);
+            presetCondition.setThreshold(c.threshold());
+            presetCondition.setThreshold2(c.threshold2());
+            presetConditionRepository.save(presetCondition);
+
+            conditionResponses.add(new PresetResponse.ConditionResponse(
+                    alertCondition.getId(),
+                    alertCondition.getIndicator(),
+                    null,
+                    c.threshold(),
+                    alertCondition.getDescription()
+            ));
+        }
+
+        log.info("✅ [5] 모든 조건 재등록 완료 - presetId={}", presetId);
+
+        // 7️⃣ 응답 DTO 구성
+        return new PresetResponse(
+                preset.getId(),
+                preset.getTitle(),
+                preset.getCategory(),
+                true,
+                preset.getCreatedAt(),
+                preset.getUpdatedAt(),
+                conditionResponses
+        );
+    }
 
 
 

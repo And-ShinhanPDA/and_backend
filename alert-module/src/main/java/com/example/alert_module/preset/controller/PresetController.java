@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +49,15 @@ public class PresetController {
         return ResponseEntity.ok(ApiResponse.success("프리셋 목록 조회 성공", presets));
     }
 
+    @PutMapping("/{presetId}")
+    public ResponseEntity<ApiResponse<PresetResponse>> updatePreset(
+            @AuthUser Long userId,
+            @PathVariable Long presetId,
+            @RequestBody PresetRequest request
+    ) {
+        PresetResponse response = presetService.updatePreset(userId, presetId, request);
+        return ResponseEntity.ok(ApiResponse.success("프리셋 수정 성공", response));
+    }
 
 
 
