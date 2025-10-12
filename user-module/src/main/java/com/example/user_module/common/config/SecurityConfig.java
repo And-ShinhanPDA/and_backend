@@ -61,7 +61,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/alert/**",
-                                        "/auth/**",
+                                        "/user/**",
                                         "/process/**").permitAll()
                         // DefaultExceptionHandler 처리를 위한 error PermitAll
                         .requestMatchers("/error/**").permitAll()
