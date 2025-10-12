@@ -9,11 +9,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@ConditionTypeMapping(ConditionType.PRICE_BELOW)
+@ConditionTypeMapping(ConditionType.PRICE_CHANGE_DAILY_DOWN)
 @Component
-public class PriceBelowEvaluator extends BaseRedisEvaluator {
+public class PriceChangeDailyDownEvaluator extends BaseRedisEvaluator {
 
-    public PriceBelowEvaluator(RedisTemplate<String, Object> redisTemplate,
+    public PriceChangeDailyDownEvaluator(RedisTemplate<String, Object> redisTemplate,
                                AlertConditionManagerRepository repo) {
         super(redisTemplate, repo);
     }
@@ -24,14 +24,14 @@ public class PriceBelowEvaluator extends BaseRedisEvaluator {
         var minute = getMinute(stockCode);
         if (minute == null) return false;
 
-        Double price = d(minute.get("price"));
-        Double target = manager.getThreshold();
-        if (price == null || target == null) return false;
+        Double diffFromOpen = d(minute.get("diffFromOpen"));
+        Double threshold = manager.getThreshold();
+        if (diffFromOpen == null || threshold == null) return false;
 
-        boolean ok = price <= target;
-        log.info("[PRICE_BELOW] alertId={} stock={} price={} target={} → {}",
+        boolean ok = diffFromOpen <= -threshold;
+        log.info("[PRICE_CHANGE_DAILY_DOWN] alertId={} stock={} diffFromOpen={} threshold={} → {}",
                 alertId, stockCode,
-                String.format("%.2f", price), String.format("%.2f", target),
+                String.format("%.2f", diffFromOpen), String.format("%.2f", threshold),
                 ok ? "충족" : "미충족");
         return ok;
     }

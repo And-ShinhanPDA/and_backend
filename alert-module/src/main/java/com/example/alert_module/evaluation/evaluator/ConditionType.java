@@ -20,4 +20,10 @@ public enum ConditionType {
     // price
     PRICE_ABOVE,
     PRICE_BELOW,
+    PRICE_CHANGE_DAILY_UP,
+    PRICE_CHANGE_DAILY_DOWN,
+    PRICE_CHANGE_BASE_UP,
+    PRICE_CHANGE_BASE_DOWN,
+
+
 }
