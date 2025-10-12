@@ -77,6 +77,11 @@ public class IngestService {
                 low52w
         );
 
+        double pctVsPrevVol = prevVolume == 0 ? 0.0 : (dto.getVolume() / (double) prevVolume) * 100.0;
+
+        metrics.put("price", dto.getPrice());
+        metrics.put("pct_vs_prev_vol", pctVsPrevVol);
+
         persistService.saveMinuteData(dto.getSymbol(), metrics);
         log.info("[TRANSFORM] {} 1분 데이터 계산 완료 -> {}", dto.getSymbol(), metrics);
 

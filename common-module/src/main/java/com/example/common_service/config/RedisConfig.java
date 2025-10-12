@@ -1,4 +1,4 @@
-package com.example.data_process_module.config;
+package com.example.common_service.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
