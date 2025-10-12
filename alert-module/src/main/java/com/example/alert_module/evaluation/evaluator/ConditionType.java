@@ -30,4 +30,17 @@ public enum ConditionType {
     PRICE_RATE_BASE_DOWN,
     TRAILING_STOP_PRICE,
     TRAILING_BUY_PRICE,
+    TRAILING_STOP_PERCENT,
+    TRAILING_BUY_PERCENT,
+
+    // daily_price
+    OPEN_PRICE,
+    CLOSE_PRICE,
+
+    // rsi_alert
+    
+
+    // bollinger_alert
+
+
 }

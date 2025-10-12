@@ -17,11 +17,11 @@ public class test {
     public String testCondition() {
 
         // ▶️ 나중에 indicator가 바뀌면 여기 한 줄만 수정하면 됨
-        ConditionType type = ConditionType.TRAILING_BUY_PRICE;
+        ConditionType type = ConditionType.OPEN_PRICE;
 
         boolean result = evaluatorFactory
                 .getEvaluator(type)
-                .evaluate(20L, 99L, "005930");
+                .evaluate(20L, 100L, "005930");
 
         log.info("🔵 [{}] 결과: {}", type, result);
         return result ? "조건 충족" : "조건 불충족";
