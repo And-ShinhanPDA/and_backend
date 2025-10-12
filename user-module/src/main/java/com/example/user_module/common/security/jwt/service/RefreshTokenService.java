@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public interface RefreshTokenService {
-    RefreshToken save(UserEntity user, String token, LocalDateTime expiryDate);
+    UUID save(UserEntity user, String token, LocalDateTime expiryDate);
 
     Long validateAndGetUserId(UUID refreshTokenId, String refreshTokenFromCookie);
 

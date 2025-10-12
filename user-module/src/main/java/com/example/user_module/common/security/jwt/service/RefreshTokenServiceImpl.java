@@ -21,7 +21,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public RefreshToken save(UserEntity user, String token, LocalDateTime expiryAt) {
+    public UUID save(UserEntity user, String token, LocalDateTime expiryAt) {
         if (expiryAt == null) {
             expiryAt = LocalDateTime.now().plusDays(7); // ✅ fallback
         }
@@ -32,7 +32,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .expiryAt(expiryAt) // ✅ null 방지
                 .build();
 
-        return refreshTokenRepository.save(refreshToken);
+        return refreshTokenRepository.save(refreshToken).getId();
     }
 
 

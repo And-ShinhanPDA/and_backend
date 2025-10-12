@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+
 
     private final RefreshTokenService refreshTokenService;
 
@@ -56,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtProvider.generateAccessToken(user.getId());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
 
-        RefreshToken refresh = refreshTokenService.save(
+        UUID tokenId = refreshTokenService.save(
                 user,
                 refreshToken,
                 LocalDateTime.now().plusDays(7)
@@ -68,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getName(),
                 accessToken,
                 refreshToken,
-                refresh.getId()
+                tokenId
         );
     }
 }
