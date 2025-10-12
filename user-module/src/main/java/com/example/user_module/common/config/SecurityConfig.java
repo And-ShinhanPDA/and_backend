@@ -60,6 +60,9 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/alert/**",
+                                        "/auth/**",
+                                        "/process/**").permitAll()
                         // DefaultExceptionHandler 처리를 위한 error PermitAll
                         .requestMatchers("/error/**").permitAll()
                         // 이외의 모든 요청은 인증 정보 필요
