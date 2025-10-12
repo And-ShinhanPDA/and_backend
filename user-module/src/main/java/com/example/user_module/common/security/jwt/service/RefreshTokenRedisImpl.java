@@ -20,33 +20,23 @@ import java.util.concurrent.TimeUnit;
 public class RefreshTokenRedisImpl implements RefreshTokenService {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final JwtProvider jwtProvider;
+    private final JwtProvider jwtProvider;;
 
-    // refresh token TTL (7일)
-    private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60L;
+    private static final String PREFIX = "refresh:user:";
 
-    /** ✅ Redis Key 생성 규칙 */
-    private String getKey(Long userId, UUID refreshTokenId) {
-        return "refresh:user:" + userId + ":" + refreshTokenId;
-    }
-
-    /** ✅ RefreshToken 저장 */
     @Override
     public UUID save(UserEntity user, String token, LocalDateTime expiryAt) {
         UUID tokenId = UUID.randomUUID();
-        String key = getKey(user.getId(), tokenId);
+        String key = PREFIX + user.getId() + ":" + tokenId;
 
-        redisTemplate.opsForValue().set(key, token, REFRESH_TOKEN_EXPIRATION, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, token, jwtProvider.getRefreshExpirationTime(), TimeUnit.SECONDS);
 
-        // 기존 AuthServiceImpl 호환을 위해 UUID 리턴
         return  tokenId;
     }
 
-    /** ✅ 검증 및 userId 반환 */
     @Override
     public Long validateAndGetUserId(UUID refreshTokenId, String refreshTokenFromCookie) {
-        // Redis 키 검색
-        Set<String> keys = redisTemplate.keys("refresh:user:*:" + refreshTokenId);
+        Set<String> keys = redisTemplate.keys(PREFIX + "*:" + refreshTokenId);
         if (keys == null || keys.isEmpty()) {
             throw new AuthException(ResponseCode.REFRESH_TOKEN_NOT_FOUND);
         }
@@ -66,13 +56,11 @@ public class RefreshTokenRedisImpl implements RefreshTokenService {
             throw new AuthException(ResponseCode.INVALID_REFRESH_TOKEN);
         }
 
-        // 키에서 userId 추출
         String[] parts = key.split(":");
         Long userId = Long.parseLong(parts[2]);
         return userId;
     }
 
-    /** ✅ 개별 로그아웃 */
     @Override
     public void delete(UUID refreshTokenId) {
         Set<String> keys = redisTemplate.keys("refresh:user:*:" + refreshTokenId);
