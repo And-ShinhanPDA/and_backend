@@ -1,6 +1,7 @@
 package com.example.alert_module.evaluation.evaluator;
 
 public enum ConditionType {
+    // sma_alert
     SMA_5_UP,
     SMA_10_UP,
     SMA_20_UP,
@@ -16,4 +17,7 @@ public enum ConditionType {
     SMA_100_DOWN,
     SMA_200_DOWN,
 
+    // price
+    PRICE_ABOVE,
+    PRICE_BELOW,
 }

@@ -17,7 +17,7 @@ public class test {
     public String testCondition() {
 
         // ▶️ 나중에 indicator가 바뀌면 여기 한 줄만 수정하면 됨
-        ConditionType type = ConditionType.SMA_200_DOWN;
+        ConditionType type = ConditionType.PRICE_ABOVE;
 
         boolean result = evaluatorFactory
                 .getEvaluator(type)
