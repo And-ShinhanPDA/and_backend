@@ -237,4 +237,40 @@ public class AlertService {
         alert.setIsActived(isActived);
         alertRepository.save(alert);
     }
+
+    public List<AlertResponse> triggerAlert(Long userId) {
+        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggered(userId, true);
+
+        if (alertList.isEmpty()) return List.of();
+
+        List<Long> alertIds = alertList.stream().map(Alert::getId).toList();
+
+        List<AlertConditionManager> managers =
+                alertConditionManagerRepository.findByAlertIdsWithCondition(alertIds);
+
+        Map<Long, List<AlertResponse.ConditionResponse>> conditionMap = managers.stream()
+                .collect(Collectors.groupingBy(
+                        acm -> acm.getAlert().getId(),
+                        Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
+                                acm.getAlertCondition().getId(),
+                                acm.getAlertCondition().getIndicator(),
+                                null,
+                                acm.getThreshold(),
+                                acm.getThreshold2(),
+                                acm.getAlertCondition().getDescription()
+                        ), Collectors.toList())
+                ));
+
+        return alertList.stream()
+                .map(alert -> new AlertResponse(
+                        alert.getId(),
+                        alert.getStockCode(),
+                        alert.getTitle(),
+                        alert.getIsActived(),
+                        alert.getCreatedAt(),
+                        alert.getUpdatedAt(),
+                        conditionMap.getOrDefault(alert.getId(), List.of())
+                ))
+                .toList();
+    }
 }
