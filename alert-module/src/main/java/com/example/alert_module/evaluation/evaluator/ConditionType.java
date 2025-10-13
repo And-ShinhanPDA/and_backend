@@ -49,5 +49,7 @@ public enum ConditionType {
     NEAR_LOW_52W,
 
     // volume_alert
+    VOLUME_AVG_DEV_UP,
+    VOLUME_AVG_DEV_DOWN,
 
 }
