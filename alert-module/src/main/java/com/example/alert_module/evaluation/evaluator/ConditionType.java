@@ -38,9 +38,16 @@ public enum ConditionType {
     CLOSE_PRICE,
 
     // rsi_alert
-    
+
 
     // bollinger_alert
 
+    // fifty_two_week
+    HIGH_52W,
+    LOW_52W,
+    NEAR_HIGH_52W,
+    NEAR_LOW_52W,
+
+    // volume_alert
 
 }
