@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,8 +47,11 @@ public class IngestService {
                 .map(DailyCandleEntity::getVolume)
                 .toList();
 
-        newEntity = transformService.enrichWithIndicators(newEntity, closePrices);
         double avgVol20 = CalculationUtil.calculateAverageVolume(volumes, 20);
+        newEntity.setAvgVol20(avgVol20);
+        newEntity = transformService.enrichWithIndicators(newEntity, closePrices);
+
+        persistService.saveAverageVolume(dto.getSymbol(), avgVol20);
 
         log.info("[1일 데이터 수신] symbol={}, closePrice={}, volume={}",
                 newEntity.getStockCode(), newEntity.getClosePrice(), newEntity.getVolume());
@@ -81,6 +85,7 @@ public class IngestService {
 
         metrics.put("price", dto.getPrice());
         metrics.put("pct_vs_prev_vol", pctVsPrevVol);
+        metrics.put("volume", (double) dto.getVolume());
 
         persistService.saveMinuteData(dto.getSymbol(), metrics);
         log.info("[TRANSFORM] {} 1분 데이터 계산 완료 -> {}", dto.getSymbol(), metrics);
