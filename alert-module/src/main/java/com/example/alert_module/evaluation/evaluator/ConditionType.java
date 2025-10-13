@@ -40,11 +40,10 @@ public enum ConditionType {
     // rsi_alert
     RSI_OVER,
     RSI_UNDER,
-    
 
     // bollinger_alert
     BOLLINGER_UPPER_TOUCH,
-    BOLLINGER_LOWER_TOUCH
+    BOLLINGER_LOWER_TOUCH,
 
     // fifty_two_week
     HIGH_52W,
@@ -54,6 +53,6 @@ public enum ConditionType {
 
     // volume_alert
     VOLUME_AVG_DEV_UP,
-    VOLUME_AVG_DEV_DOWN,
+    VOLUME_AVG_DEV_DOWN;
 
 }
