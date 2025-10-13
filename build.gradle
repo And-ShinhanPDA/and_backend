@@ -14,6 +14,11 @@ allprojects {
 	sourceCompatibility = '17'
 
 	apply plugin: 'java'
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 	apply plugin: 'org.springframework.boot'
 	apply plugin: 'io.spring.dependency-management'
 
@@ -70,10 +75,4 @@ project(':user-module') {
 		implementation 'org.springframework.security:spring-security-test'
 		runtimeOnly 'org.junit.platform:junit-platform-launcher'
 	}
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
 }
