@@ -53,6 +53,8 @@ public enum ConditionType {
 
     // volume_alert
     VOLUME_AVG_DEV_UP,
-    VOLUME_AVG_DEV_DOWN;
+    VOLUME_AVG_DEV_DOWN,
 
+    VOLUME_CHANGE_PERCENT_DOWN,
+    VOLUME_CHANGE_PERCENT_UP;
 }
