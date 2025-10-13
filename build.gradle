@@ -70,6 +70,10 @@ project(':user-module') {
 		implementation 'org.springframework.security:spring-security-test'
 		runtimeOnly 'org.junit.platform:junit-platform-launcher'
 	}
+}
 
-
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
