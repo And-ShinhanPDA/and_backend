@@ -35,6 +35,12 @@ public class PersistService {
         log.info("[REDIS SAVE] 분별 데이터 {} -> {}", key, metrics);
     }
 
+    public void saveAverageVolume(String ticker, double avgVol20) {
+        String key = "avgVol20:" + ticker;
+        redisTemplate.opsForValue().set(key, avgVol20, Duration.ofHours(24));
+        log.info("[REDIS SAVE] 평균 거래량20 {} -> {}", key, avgVol20);
+    }
+
     public void syncDailyDataToDB() {
         Set<String> keys = redisTemplate.keys("daily:*");
         log.info("🔍 Redis에서 찾은 daily:* 키 목록 = {}", keys);
