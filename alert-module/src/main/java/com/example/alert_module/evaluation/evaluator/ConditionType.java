@@ -40,11 +40,12 @@ public enum ConditionType {
     // rsi_alert
     RSI_OVER,
     RSI_UNDER,
-    
 
     // bollinger_alert
     BOLLINGER_UPPER_TOUCH,
-    BOLLINGER_LOWER_TOUCH
+    BOLLINGER_LOWER_TOUCH,
 
-
+    //
+    VOLUME_CHANGE_PERCENT_UP,
+    VOLUME_CHANGE_PERCENT_DOWN,
 }
