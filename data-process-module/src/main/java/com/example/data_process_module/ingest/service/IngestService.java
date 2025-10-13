@@ -6,10 +6,10 @@ import com.example.data_process_module.ingest.dto.MinuteDataRequest;
 import com.example.data_process_module.persist.entity.DailyCandleEntity;
 import com.example.data_process_module.persist.repository.DailyCandleRepository;
 import com.example.data_process_module.persist.service.PersistService;
+import com.example.data_process_module.publish.DataPublishService;
 import com.example.data_process_module.transform.service.TransformService;
 import com.example.data_process_module.transform.util.CalculationUtil;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,7 @@ public class IngestService {
     private final TransformService transformService;
     private final DailyCandleRepository dailyCandleRepository;
     private final PersistService persistService;
+    private final DataPublishService dataPublishService;
 
     public void processDailyData(DailyDataRequest dto) {
         DailyCandleEntity newEntity = DailyCandleEntity.builder()
@@ -46,8 +47,11 @@ public class IngestService {
                 .map(DailyCandleEntity::getVolume)
                 .toList();
 
-        newEntity = transformService.enrichWithIndicators(newEntity, closePrices);
         double avgVol20 = CalculationUtil.calculateAverageVolume(volumes, 20);
+        newEntity.setAvgVol20(avgVol20);
+        newEntity = transformService.enrichWithIndicators(newEntity, closePrices);
+
+        persistService.saveAverageVolume(dto.getSymbol(), avgVol20);
 
         log.info("[1일 데이터 수신] symbol={}, closePrice={}, volume={}",
                 newEntity.getStockCode(), newEntity.getClosePrice(), newEntity.getVolume());
@@ -77,6 +81,12 @@ public class IngestService {
                 low52w
         );
 
+        double pctVsPrevVol = prevVolume == 0 ? 0.0 : (dto.getVolume() / (double) prevVolume) * 100.0;
+
+        metrics.put("price", dto.getPrice());
+        metrics.put("pct_vs_prev_vol", pctVsPrevVol);
+        metrics.put("volume", (double) dto.getVolume());
+
         persistService.saveMinuteData(dto.getSymbol(), metrics);
         log.info("[TRANSFORM] {} 1분 데이터 계산 완료 -> {}", dto.getSymbol(), metrics);
 
@@ -89,5 +99,7 @@ public class IngestService {
                 metrics.get("diffFromHigh52wPct"),
                 metrics.get("diffFromLow52wPct")
         );
+
+        dataPublishService.publishStockUpdate(dto.getSymbol());
     }
 }

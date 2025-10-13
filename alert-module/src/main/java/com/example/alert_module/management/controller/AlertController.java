@@ -83,4 +83,10 @@ public class AlertController {
         return ResponseEntity.ok(ApiResponse.success("알림이 성공적으로 수정되었습니다.", response));
     }
 
+    @GetMapping("/triggered")
+    public ResponseEntity<ApiResponse<List<AlertResponse>>> triggerAlert(@AuthUser Long userId) {
+        List<AlertResponse> response = alertService.triggerAlert(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("현재 조건을 만족 중인 알림들이 조회되었습니다.", response));
+    }
 }

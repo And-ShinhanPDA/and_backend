@@ -2,10 +2,7 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.common.exception.CustomException;
 import com.example.alert_module.common.exception.ErrorCode;
-import com.example.alert_module.management.dto.AlertCreateRequest;
-import com.example.alert_module.management.dto.AlertDetailResponse;
-import com.example.alert_module.management.dto.AlertResponse;
-import com.example.alert_module.management.dto.AlertUpdateRequest;
+import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
 import jakarta.transaction.Transactional;
@@ -241,4 +238,39 @@ public class AlertService {
         alertRepository.save(alert);
     }
 
+    public List<AlertResponse> triggerAlert(Long userId) {
+        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggered(userId, true);
+
+        if (alertList.isEmpty()) return List.of();
+
+        List<Long> alertIds = alertList.stream().map(Alert::getId).toList();
+
+        List<AlertConditionManager> managers =
+                alertConditionManagerRepository.findByAlertIdsWithCondition(alertIds);
+
+        Map<Long, List<AlertResponse.ConditionResponse>> conditionMap = managers.stream()
+                .collect(Collectors.groupingBy(
+                        acm -> acm.getAlert().getId(),
+                        Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
+                                acm.getAlertCondition().getId(),
+                                acm.getAlertCondition().getIndicator(),
+                                null,
+                                acm.getThreshold(),
+                                acm.getThreshold2(),
+                                acm.getAlertCondition().getDescription()
+                        ), Collectors.toList())
+                ));
+
+        return alertList.stream()
+                .map(alert -> new AlertResponse(
+                        alert.getId(),
+                        alert.getStockCode(),
+                        alert.getTitle(),
+                        alert.getIsActived(),
+                        alert.getCreatedAt(),
+                        alert.getUpdatedAt(),
+                        conditionMap.getOrDefault(alert.getId(), List.of())
+                ))
+                .toList();
+    }
 }

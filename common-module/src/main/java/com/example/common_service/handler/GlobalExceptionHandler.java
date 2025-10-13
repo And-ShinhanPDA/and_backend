@@ -1,5 +1,6 @@
 package com.example.common_service.handler;
 
+import com.example.common_service.exception.AlertException;
 import com.example.common_service.exception.AuthException;
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
@@ -36,5 +37,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ex.getHttpStatus())
                 .body(ApiResponse.error(ex.getResponseCode()));
+    }
+
+    @ExceptionHandler(AlertException.class)
+    protected ResponseEntity<ApiResponse<?>> handleAlertException(AlertException e) {
+        return ResponseEntity
+                .status(e.getHttpStatus())
+                .body(ApiResponse.error(e.getResponseCode()));
     }
 }

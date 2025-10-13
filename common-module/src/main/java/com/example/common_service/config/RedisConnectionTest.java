@@ -1,4 +1,4 @@
-package com.example.data_process_module.config;
+package com.example.common_service.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
