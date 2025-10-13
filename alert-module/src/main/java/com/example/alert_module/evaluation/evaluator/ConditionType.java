@@ -16,6 +16,8 @@ public enum ConditionType {
     SMA_50_DOWN,
     SMA_100_DOWN,
     SMA_200_DOWN,
+    GOLDEN_CROSS,
+    DEAD_CROSS,
 
     // price
     PRICE_ABOVE,
