@@ -43,6 +43,8 @@ public enum ConditionType {
     
 
     // bollinger_alert
+    BOLLINGER_UPPER_TOUCH,
+    BOLLINGER_LOWER_TOUCH
 
 
 }
