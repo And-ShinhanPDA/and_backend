@@ -6,13 +6,12 @@ import com.example.data_process_module.ingest.dto.MinuteDataRequest;
 import com.example.data_process_module.persist.entity.DailyCandleEntity;
 import com.example.data_process_module.persist.repository.DailyCandleRepository;
 import com.example.data_process_module.persist.service.PersistService;
+import com.example.data_process_module.publish.DataPublishService;
 import com.example.data_process_module.transform.service.TransformService;
 import com.example.data_process_module.transform.util.CalculationUtil;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +24,7 @@ public class IngestService {
     private final TransformService transformService;
     private final DailyCandleRepository dailyCandleRepository;
     private final PersistService persistService;
+    private final DataPublishService dataPublishService;
 
     public void processDailyData(DailyDataRequest dto) {
         DailyCandleEntity newEntity = DailyCandleEntity.builder()
@@ -99,5 +99,7 @@ public class IngestService {
                 metrics.get("diffFromHigh52wPct"),
                 metrics.get("diffFromLow52wPct")
         );
+
+        dataPublishService.publishStockUpdate(dto.getSymbol());
     }
 }
