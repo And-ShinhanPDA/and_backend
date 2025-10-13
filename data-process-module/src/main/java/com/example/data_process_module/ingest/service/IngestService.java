@@ -81,6 +81,7 @@ public class IngestService {
 
         metrics.put("price", dto.getPrice());
         metrics.put("pct_vs_prev_vol", pctVsPrevVol);
+        metrics.put("volume", (double) dto.getVolume());
 
         persistService.saveMinuteData(dto.getSymbol(), metrics);
         log.info("[TRANSFORM] {} 1분 데이터 계산 완료 -> {}", dto.getSymbol(), metrics);
