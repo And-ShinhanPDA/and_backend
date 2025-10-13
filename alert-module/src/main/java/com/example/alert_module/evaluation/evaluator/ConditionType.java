@@ -38,6 +38,8 @@ public enum ConditionType {
     CLOSE_PRICE,
 
     // rsi_alert
+    RSI_OVER,
+    RSI_UNDER,
     
 
     // bollinger_alert
