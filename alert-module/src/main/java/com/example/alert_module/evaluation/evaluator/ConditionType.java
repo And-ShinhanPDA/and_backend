@@ -45,7 +45,14 @@ public enum ConditionType {
     BOLLINGER_UPPER_TOUCH,
     BOLLINGER_LOWER_TOUCH,
 
-    //
-    VOLUME_CHANGE_PERCENT_UP,
-    VOLUME_CHANGE_PERCENT_DOWN,
+    // fifty_two_week
+    HIGH_52W,
+    LOW_52W,
+    NEAR_HIGH_52W,
+    NEAR_LOW_52W,
+
+    // volume_alert
+    VOLUME_AVG_DEV_UP,
+    VOLUME_AVG_DEV_DOWN;
+
 }

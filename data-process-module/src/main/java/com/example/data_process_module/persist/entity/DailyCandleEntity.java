@@ -69,6 +69,9 @@ public class DailyCandleEntity {
     @Column(name = "sma_200")
     private Double sma200;
 
+    @Transient
+    private Double avgVol20;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
