@@ -7,7 +7,9 @@ public record AlertUpdateRequest(
         String title,
         Boolean isActive,
         Boolean isPreset,
-        List<ConditionRequest> conditions
+        List<ConditionRequest> conditions,
+        String aiFeedback
+
 ) {
     public record ConditionRequest(
             String indicator,

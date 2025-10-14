@@ -5,6 +5,7 @@ import com.example.alert_module.common.exception.ErrorCode;
 import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
+    private final OpenAIService openAIService;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -52,7 +54,8 @@ public class AlertService {
                 alert.getIsActived(),
                 alert.getCreatedAt(),
                 alert.getUpdatedAt(),
-                conditionResponses
+                conditionResponses,
+                alert.getAiFeedback()
         );
     }
 
@@ -97,7 +100,8 @@ public class AlertService {
                         alert.getIsActived(),
                         alert.getCreatedAt(),
                         alert.getUpdatedAt(),
-                        conditionMap.getOrDefault(alert.getId(), List.of())
+                        conditionMap.getOrDefault(alert.getId(), List.of()),
+                        alert.getAiFeedback()
                 ))
                 .collect(Collectors.toList());
     }
@@ -145,6 +149,17 @@ public class AlertService {
                     )
             );
         }
+        // ✅ AI 피드백 로직 추가
+        String indicatorsSummary = conditionResponses.stream()
+                .map(c -> String.format("- %s: %.2f ~ %.2f", c.indicator(), c.threshold(), c.threshold2()))
+                .collect(Collectors.joining("\n"));
+
+        // OpenAI 호출
+        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+
+        // ✅ 2. DB에도 aiFeedback 저장
+        alert.setAiFeedback(aiFeedback);
+        alertRepository.save(alert);
 
         return new AlertResponse(
                 alert.getId(),
@@ -153,7 +168,8 @@ public class AlertService {
                 alert.getIsActived(),
                 alert.getCreatedAt(),
                 alert.getUpdatedAt(),
-                conditionResponses
+                conditionResponses,
+                alert.getAiFeedback()
         );
     }
 
@@ -213,6 +229,21 @@ public class AlertService {
                     cond.getDescription()
             ));
         }
+        // 조건 저장 이후 추가
+        String indicatorsSummary = conditionResponses.stream()
+                .map(c -> String.format("- %s: %.2f ~ %.2f", c.indicator(), c.threshold(), c.threshold2()))
+                .collect(Collectors.joining("\n"));
+
+        String aiFeedback;
+        try {
+            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+        } catch (Exception e) {
+            aiFeedback = alert.getAiFeedback(); // 기존 유지
+        }
+
+        alert.setAiFeedback(aiFeedback);
+        alertRepository.save(alert);
+
 
         return new AlertResponse(
                 alert.getId(),
@@ -221,7 +252,8 @@ public class AlertService {
                 alert.getIsActived(),
                 alert.getCreatedAt(),
                 alert.getUpdatedAt(),
-                conditionResponses
+                conditionResponses,
+                alert.getAiFeedback()
         );
     }
 
@@ -269,7 +301,8 @@ public class AlertService {
                         alert.getIsActived(),
                         alert.getCreatedAt(),
                         alert.getUpdatedAt(),
-                        conditionMap.getOrDefault(alert.getId(), List.of())
+                        conditionMap.getOrDefault(alert.getId(), List.of()),
+                        alert.getAiFeedback()
                 ))
                 .toList();
     }
