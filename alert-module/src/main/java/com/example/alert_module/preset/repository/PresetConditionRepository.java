@@ -11,8 +11,7 @@ import java.util.List;
 @Repository
 public interface PresetConditionRepository extends JpaRepository<PresetCondition, PresetConditionId> {
 
-    List<PresetCondition> findByPreset_Id(Long presetId);
-    List<PresetCondition> findByAlertCondition_Id(Long alertConditionId);
     void deleteAllByPreset(Preset preset);
     List<PresetCondition> findAllByPreset(Preset preset);
+    List<PresetCondition> findByPresetId(Long presetId);
 }
