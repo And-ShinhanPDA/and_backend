@@ -38,5 +38,5 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     List<Alert> findByUserIdAndIsTriggered(Long userId, Boolean isTriggered);
 
-    List<Alert> findByIsActivedAndStockCode(String stockCode);
+    List<Alert> findByIsActivedAndStockCode(boolean isActived, String stockCode);
 }

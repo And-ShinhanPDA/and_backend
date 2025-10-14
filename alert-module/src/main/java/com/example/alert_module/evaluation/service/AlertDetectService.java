@@ -24,7 +24,7 @@ public class AlertDetectService {
 
     public void detectForStock(String stockCode) {
         // 1️⃣ 해당 종목의 활성화된 Alert만 조회
-        List<Alert> activeAlerts = alertRepository.findByIsActivedAndStockCode(stockCode);
+        List<Alert> activeAlerts = alertRepository.findByIsActivedAndStockCode(true, stockCode);
         if (activeAlerts.isEmpty()) {
             log.debug("⚪ [{}] 활성 알림 없음", stockCode);
             return;
