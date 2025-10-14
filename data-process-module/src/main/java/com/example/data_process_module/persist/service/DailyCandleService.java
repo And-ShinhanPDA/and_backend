@@ -52,6 +52,10 @@ public class DailyCandleService {
             prevClose = e.getClosePrice();
         }
 
+        if (responses.size() > 200) {
+            responses = responses.subList(1, 201);
+        }
+
         return responses;
     }
 }

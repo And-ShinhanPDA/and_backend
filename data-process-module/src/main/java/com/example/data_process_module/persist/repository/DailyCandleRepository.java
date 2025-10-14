@@ -16,7 +16,7 @@ public interface DailyCandleRepository extends JpaRepository<DailyCandleEntity, 
         SELECT * FROM daily_candle 
         WHERE stock_code = :stockCode
         ORDER BY date DESC
-        LIMIT 200
+        LIMIT 201
         """, nativeQuery = true)
     List<DailyCandleEntity> findRecent200ByStockCode(@Param("stockCode") String stockCode);
 }
