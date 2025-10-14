@@ -1,5 +1,7 @@
 package com.example.alert_module.preset.service;
 
+import com.example.alert_module.common.exception.CustomException;
+import com.example.alert_module.common.exception.ErrorCode;
 import com.example.alert_module.management.entity.AlertCondition;
 import com.example.alert_module.management.repository.AlertConditionRepository;
 import com.example.alert_module.preset.dto.PresetRequest;
@@ -75,7 +77,6 @@ public class PresetService {
 
         log.info("🎯 [7] 모든 PresetCondition 저장 완료 - presetId={}", preset.getId());
 
-        // ✅ 프리셋 응답 DTO 구성
         return new PresetResponse(
                 preset.getId(),
                 preset.getTitle(),
@@ -91,22 +92,18 @@ public class PresetService {
     public void deletePreset(Long userId, Long presetId) {
         log.info("🗑️ [1] 프리셋 삭제 시도 - userId={}, presetId={}", userId, presetId);
 
-        // 1️⃣ 프리셋 조회
         Preset preset = presetRepository.findById(presetId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프리셋입니다."));
 
-        // 2️⃣ 사용자 검증
         if (!preset.getUserId().equals(userId)) {
             log.error("🚫 [2] 삭제 권한 없음 - preset.userId={}, request.userId={}", preset.getUserId(), userId);
             throw new IllegalStateException("본인 소유의 프리셋만 삭제할 수 있습니다.");
         }
 
-        // 3️⃣ 연결된 조건 삭제
-        log.info("🧩 [3] 연결된 PresetCondition 삭제 시작 - presetId={}", presetId);
+        log.info("🧩 [3] s연결된 PresetCondition 삭제 시작 - presetId={}", presetId);
         presetConditionRepository.deleteAllByPreset(preset);
         log.info("✅ [3] PresetCondition 삭제 완료");
 
-        // 4️⃣ 프리셋 삭제
         presetRepository.delete(preset);
         log.info("✅ [4] Preset 삭제 완료 - presetId={}", presetId);
     }
@@ -159,29 +156,24 @@ public class PresetService {
     public PresetResponse updatePreset(Long userId, Long presetId, PresetRequest request) {
         log.info("✏️ [1] 프리셋 수정 시작 - userId={}, presetId={}", userId, presetId);
 
-        // 1️⃣ 프리셋 조회
         Preset preset = presetRepository.findById(presetId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프리셋입니다."));
 
-        // 2️⃣ 권한 검증
         if (!preset.getUserId().equals(userId)) {
             log.error("🚫 [2] 권한 없음 - preset.userId={}, request.userId={}", preset.getUserId(), userId);
             throw new IllegalStateException("본인 소유의 프리셋만 수정할 수 있습니다.");
         }
 
-        // 3️⃣ 기존 조건들 삭제
         log.info("🧩 [3] 기존 PresetCondition 삭제 시작 - presetId={}", presetId);
         presetConditionRepository.deleteAllByPreset(preset);
         log.info("✅ [3] 기존 조건 삭제 완료");
 
-        // 4️⃣ 타이틀 및 업데이트 시간 수정
         preset.setTitle(request.title());
         preset.setUpdatedAt(LocalDateTime.now());
         presetRepository.save(preset);
 
         log.info("🟢 [4] 프리셋 기본정보 수정 완료 - title={}, updatedAt={}", preset.getTitle(), preset.getUpdatedAt());
 
-        // 5️⃣ AlertCondition 조회
         Set<String> indicators = request.conditions().stream()
                 .map(PresetRequest.ConditionRequest::indicator)
                 .collect(Collectors.toSet());
@@ -189,7 +181,6 @@ public class PresetService {
         Map<String, AlertCondition> condMap = condList.stream()
                 .collect(Collectors.toMap(AlertCondition::getIndicator, c -> c));
 
-        // 6️⃣ 새로운 조건 등록
         List<PresetResponse.ConditionResponse> conditionResponses = new ArrayList<>();
 
         for (var c : request.conditions()) {
@@ -215,7 +206,6 @@ public class PresetService {
 
         log.info("✅ [5] 모든 조건 재등록 완료 - presetId={}", presetId);
 
-        // 7️⃣ 응답 DTO 구성
         return new PresetResponse(
                 preset.getId(),
                 preset.getTitle(),
@@ -227,6 +217,33 @@ public class PresetService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public PresetResponse getPresetById(Long presetId) {
 
+        Preset preset = presetRepository.findById(presetId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRESET_NOT_FOUND));
+
+        List<PresetResponse.ConditionResponse> conditions =
+                presetConditionRepository.findByPresetId(presetId)
+                        .stream()
+                        .map(pc -> new PresetResponse.ConditionResponse(
+                                pc.getAlertCondition().getId(),
+                                pc.getAlertCondition().getIndicator(),
+                                null,
+                                pc.getThreshold(),
+                                pc.getAlertCondition().getDescription()
+                        ))
+                        .toList();
+
+        return new PresetResponse(
+                preset.getId(),
+                preset.getTitle(),
+                preset.getCategory(),
+                true, // isActive는 엔티티에 없으므로 임시 true
+                preset.getCreatedAt(),
+                preset.getUpdatedAt(),
+                conditions
+        );
+    }
 
 }

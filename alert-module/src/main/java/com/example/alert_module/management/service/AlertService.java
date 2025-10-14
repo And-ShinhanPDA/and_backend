@@ -20,7 +20,7 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
-    private final OpenAIService openAIService;
+//    private final OpenAIService openAIService;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -155,10 +155,10 @@ public class AlertService {
                 .collect(Collectors.joining("\n"));
 
         // OpenAI 호출
-        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+//        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
 
         // ✅ 2. DB에도 aiFeedback 저장
-        alert.setAiFeedback(aiFeedback);
+//        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
 
         return new AlertResponse(
@@ -236,12 +236,12 @@ public class AlertService {
 
         String aiFeedback;
         try {
-            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+//            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
         } catch (Exception e) {
             aiFeedback = alert.getAiFeedback(); // 기존 유지
         }
 
-        alert.setAiFeedback(aiFeedback);
+//        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
 
 
