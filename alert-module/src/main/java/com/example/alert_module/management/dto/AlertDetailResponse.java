@@ -16,6 +16,7 @@ public class AlertDetailResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<Condition> conditions;
+    private String aiFeedback;
 
     @Getter
     @AllArgsConstructor

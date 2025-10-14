@@ -9,7 +9,8 @@ public record AlertCreateRequest(
         @NotBlank String title,
         @NotNull Boolean isActive,
         @NotNull Boolean isPreset,
-        List<ConditionRequest> conditions
+        List<ConditionRequest> conditions,
+        String aiFeedback
 ) {
     public record ConditionRequest(
             @NotBlank String indicator,
