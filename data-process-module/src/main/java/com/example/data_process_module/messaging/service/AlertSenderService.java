@@ -14,7 +14,7 @@ public class AlertSenderService {
     public void sendTestMessage(String message) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.ALERT_EXCHANGE,
-                RabbitMQConfig.ALERT_ROUTING_KEY,
+                RabbitMQConfig.ALERT_TEST_ROUTING_KEY,
                 message
         );
         System.out.println("📤 Sent message to RabbitMQ: " + message);
