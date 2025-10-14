@@ -1,6 +1,6 @@
-package com.example.alert_module.evaluation.event;
+package com.example.alert_module.notification.event;
 
-import com.example.alert_module.evaluation.event.model.AlertEvent;
+import com.example.alert_module.notification.event.model.AlertEvent;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

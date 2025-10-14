@@ -1,4 +1,4 @@
-package com.example.alert_module.evaluation.event;
+package com.example.alert_module.common.config;
 
 import com.example.alert_module.evaluation.service.AlertDetectService;
 import lombok.RequiredArgsConstructor;

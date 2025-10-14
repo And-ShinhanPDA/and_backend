@@ -1,8 +1,8 @@
 package com.example.alert_module.evaluation.evaluator.impl;
 
 import com.example.alert_module.evaluation.evaluator.ConditionEvaluator;
-import com.example.alert_module.evaluation.evaluator.ConditionType;
-import com.example.alert_module.evaluation.evaluator.ConditionTypeMapping;
+import com.example.alert_module.evaluation.evaluator.type.ConditionType;
+import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
-package com.example.alert_module.evaluation.service;
+package com.example.alert_module.notification.service;
 
-import com.example.alert_module.evaluation.event.model.AlertEvent;
+import com.example.alert_module.notification.event.model.AlertEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

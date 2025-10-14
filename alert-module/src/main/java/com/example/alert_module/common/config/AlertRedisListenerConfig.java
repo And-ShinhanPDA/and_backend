@@ -1,6 +1,5 @@
-package com.example.alert_module.common;
+package com.example.alert_module.common.config;
 
-import com.example.alert_module.evaluation.event.StockUpdateListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.example.alert_module.evaluation.evaluator;
+package com.example.alert_module.evaluation.evaluator.type;
 
 public enum ConditionType {
     // sma_alert

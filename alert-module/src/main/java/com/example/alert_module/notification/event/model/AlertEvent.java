@@ -1,4 +1,4 @@
-package com.example.alert_module.evaluation.event.model;
+package com.example.alert_module.notification.event.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
 package com.example.alert_module.evaluation.evaluator;
 
+import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
 import com.example.alert_module.management.entity.AlertConditionManager;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
