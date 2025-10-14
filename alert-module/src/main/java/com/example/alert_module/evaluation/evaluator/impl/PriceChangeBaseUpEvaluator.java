@@ -1,30 +1,25 @@
 package com.example.alert_module.evaluation.evaluator.impl;
 
+import com.example.alert_module.evaluation.evaluator.ConditionEvaluator;
 import com.example.alert_module.evaluation.evaluator.ConditionType;
 import com.example.alert_module.evaluation.evaluator.ConditionTypeMapping;
 import com.example.alert_module.evaluation.evaluator.base.BaseRedisEvaluator;
+import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Slf4j
 @ConditionTypeMapping(ConditionType.PRICE_CHANGE_BASE_UP)
 @Component
-public class PriceChangeBaseUpEvaluator extends BaseRedisEvaluator {
-
-    public PriceChangeBaseUpEvaluator(RedisTemplate<String, Object> redisTemplate,
-                                         AlertConditionManagerRepository repo) {
-        super(redisTemplate, repo);
-    }
+public class PriceChangeBaseUpEvaluator implements ConditionEvaluator {
 
     @Override
-    public boolean evaluate(Long alertId, Long conditionId, String stockCode) {
-        var manager = getManager(alertId, conditionId);
-        var minute = getMinute(stockCode);
-        if (minute == null) return false;
-
-        Double price = d(minute.get("price"));
+    public boolean evaluate(AlertConditionManager manager, Map<String, Double> metrics) {
+        Double price = metrics.get("price");
         Double basePrice = manager.getThreshold2();
         Double diffTarget = manager.getThreshold();
 
@@ -32,7 +27,7 @@ public class PriceChangeBaseUpEvaluator extends BaseRedisEvaluator {
 
         boolean ok = price >= basePrice + diffTarget;
         log.info("[PRICE_CHANGE_BASE_UP] alertId={} stock={} price={} basePrice={} diffTarget={} → {}",
-                alertId, stockCode,
+                manager.getAlert().getId(), manager.getAlert().getStockCode(),
                 String.format("%.2f", price),
                 String.format("%.2f", basePrice),
                 String.format("%.2f", diffTarget),
