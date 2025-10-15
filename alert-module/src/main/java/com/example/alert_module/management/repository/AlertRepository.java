@@ -22,14 +22,15 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     SELECT new com.example.alert_module.management.dto.GetCompanyRes(
         a.stockCode,
         c.name,
-        COUNT(a)
+        SUM(CASE WHEN a.isActived = true THEN 1 ELSE 0 END),
+        CASE WHEN SUM(CASE WHEN a.isActived = true THEN 1 ELSE 0 END) > 0 THEN true ELSE false END
     )
     FROM Alert a
     JOIN Company c ON a.stockCode = c.stockCode
     WHERE a.userId = :userId
     GROUP BY a.stockCode, c.name
 """)
-    List<GetCompanyRes> findCompanyAlertCountsByUserId(Long userId);
+    List<GetCompanyRes> findCompanyAlertCountsByUserId(@Param("userId") Long userId);
 
 
     @Query("SELECT a.id FROM Alert a WHERE a.userId = :userId AND a.stockCode = :stockCode")
