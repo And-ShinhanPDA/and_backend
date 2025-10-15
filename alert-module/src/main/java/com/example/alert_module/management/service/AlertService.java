@@ -21,7 +21,7 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
-//    private final OpenAIService openAIService;
+    private final OpenAIService openAIService;
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
@@ -73,6 +73,7 @@ public class AlertService {
         } else {
             alerts = alertRepository.findByUserId(userId);
         }
+
 
         if (alerts.isEmpty()) return List.of();
 
@@ -161,11 +162,11 @@ public class AlertService {
                 .map(c -> String.format("- %s: %.2f ~ %.2f", c.indicator(), c.threshold(), c.threshold2()))
                 .collect(Collectors.joining("\n"));
 
-        // OpenAI 호출
-//        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+         //OpenAI 호출
+        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
 
         // ✅ 2. DB에도 aiFeedback 저장
-//        alert.setAiFeedback(aiFeedback);
+        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
 
         return new AlertResponse(

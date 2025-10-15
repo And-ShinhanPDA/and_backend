@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 import java.util.Map;
 
-//@Service
+@Service
 public class OpenAIService {
 
     private final WebClient webClient;
@@ -68,7 +68,7 @@ public class OpenAIService {
             BOLLINGER_LOWER_TOUCH	현재가가 상단 볼린저 밴드 이하일 때 (약세 신호)
             
             그리고 숫자 값들은 이 값 이하이거나 이상일때 이런의미야
-            이 내용들을 참고해서 이 조건들의 조합이 어떤의미일지 50자 이내의 피드백을 줘.
+            이 내용들을 참고해서 이 조건들의 조합이 충족돼서 알림이 울린다면 어떤의미일지 50자 이내의 피드백을 줘.
             조건:
             """ + indicatorsSummary;
 
