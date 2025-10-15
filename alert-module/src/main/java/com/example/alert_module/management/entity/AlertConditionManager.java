@@ -1,6 +1,7 @@
 package com.example.alert_module.management.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
