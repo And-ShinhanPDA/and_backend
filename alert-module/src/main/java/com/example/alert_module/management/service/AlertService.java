@@ -87,7 +87,7 @@ public class AlertService {
                         Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
                                 acm.getAlertCondition().getId(),
                                 acm.getAlertCondition().getIndicator(),
-                                null, // operator (필요시 추가)
+                                null,
                                 acm.getThreshold(),
                                 acm.getThreshold2(),
                                 acm.getAlertCondition().getDescription()
@@ -319,7 +319,12 @@ public class AlertService {
             case "PRICE_CHANGE_BASE_UP",
                  "PRICE_CHANGE_BASE_DOWN",
                  "PRICE_RATE_BASE_UP",
-                 "PRICE_RATE_BASE_DOWN" -> true;
+                 "PRICE_RATE_BASE_DOWN",
+                 "TRAILING_STOP_PRICE",
+                 "TRAILING_STOP_PERCENT",
+                 "TRAILING_BUY_PRICE",
+                 "TRAILING_BUY_PERCENT"
+                 -> true;
             default -> false;
         };
     }
