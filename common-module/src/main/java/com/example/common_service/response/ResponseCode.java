@@ -38,7 +38,10 @@ public enum ResponseCode {
     STOCK_NOT_FOUND("STOCK_NOT_FOUND", "해당하는 종목이 없습니다.", HttpStatus.NOT_FOUND),
     NO_EXIST_ALERT("NO_EXIST_ALERT", "삭제할 알림이 없습니다.", HttpStatus.NOT_FOUND),
 
+    NO_PREVIOUS_CANDLE("NO_PREVIOUS_CANDLE", "차트 데이터가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+
 
     private final String code;
     private final String message;
