@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "dailyCandle")
+@Table(name = "daily_candle")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Builder
 @IdClass(DailyCandleEntity.PK.class)
 public class DailyCandleEntity {
-
     @Id
     @Column(name = "stock_code", length = 50, nullable = false)
     private String stockCode;

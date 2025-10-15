@@ -50,6 +50,9 @@ public class Alert {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "ai_feedback", columnDefinition = "TEXT")
+    private String aiFeedback;
+
     @OneToMany(mappedBy = "alert", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<AlertHistory> alertHistories = new ArrayList<>();
 

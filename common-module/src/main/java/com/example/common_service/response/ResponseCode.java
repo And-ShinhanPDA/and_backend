@@ -22,6 +22,8 @@ public enum ResponseCode {
     SUCCESS_DELETE_ALERT_COMPANY("SUCCESS_DELETE_ALERT_COMPANY", "알림 전체 삭제에 성공하였습니다.", HttpStatus.OK),
     SUCCESS_TOGGLE_ALERT_COMPANY("SUCCESS_TOGGLE_ALERT_COMPANY", "알림 전체 활성화/비활성화 성공하였습니다.", HttpStatus.OK),
     SUCCESS_ALERT_HEATMAP("SUCCESS_ALERT_HEATMAP", "일주일동안 울린 알림 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_GET_DAILY_CANDLE("SUCCESS_GET_DAILY_CANDLE", "일봉 데이터 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_GET_MINUTE_CANDLE("SUCCESS_GET_MINUTE_CANDLE", "분봉 데이터 조회에 성공하였습니다.", HttpStatus.OK),
 
     USER_EXIST("USER_EXIST", "이미 존재하는 회원이 있습니다.", HttpStatus.BAD_REQUEST),
     INVALID_INPUT("INVALID_INPUT", "입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
