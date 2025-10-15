@@ -2,6 +2,7 @@ package com.example.data_process_module.persist.controller;
 
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
+import com.example.data_process_module.persist.dto.StockPriceResponse;
 import com.example.data_process_module.persist.service.StockPriceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +18,8 @@ public class StockPriceController {
     private final StockPriceService stockPriceService;
 
     @GetMapping("/{stockCode}")
-    public ApiResponse<Double> getCurrentPrice(@PathVariable String stockCode) {
-        Double price = stockPriceService.getCurrentPrice(stockCode);
+    public ApiResponse<StockPriceResponse> getCurrentPrice(@PathVariable String stockCode) {
+        StockPriceResponse price = stockPriceService.getCurrentPrice(stockCode);
 
         if (price == null) {
             return ApiResponse.error(ResponseCode.STOCK_NOT_FOUND);
