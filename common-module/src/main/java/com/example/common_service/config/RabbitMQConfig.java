@@ -20,11 +20,15 @@ public class RabbitMQConfig {
     // ======================================================
     // 🧩 RabbitMQ 접속정보 (application.yml에서 주입)
     // ======================================================
+//    @Value("${spring.rabbitmq.addresses}")
+//    private String addresses;
+
     @Value("${spring.rabbitmq.host}")
     private String host;
 
     @Value("${spring.rabbitmq.port}")
     private int port;
+
 
     @Value("${spring.rabbitmq.username}")
     private String username;
@@ -37,10 +41,15 @@ public class RabbitMQConfig {
     // ======================================================
     @Bean
     public CachingConnectionFactory connectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory(host);
-        factory.setPort(port);
+        CachingConnectionFactory factory = new CachingConnectionFactory(addresses);
+        factory.setAddresses(addresses);
         factory.setUsername(username);
         factory.setPassword(password);
+
+        // ✅ 장애 복구시 자동 재연결
+        factory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
+        factory.setPublisherReturns(true);
+
         return factory;
     }
 
