@@ -2,10 +2,13 @@ package com.example.alert_module.evaluation.evaluator;
 
 import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
 import com.example.alert_module.management.entity.AlertConditionManager;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +18,7 @@ import java.util.Map;
 public class ConditionEvaluatorManager {
 
     private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, ConditionEvaluator> evaluators = new HashMap<>();
 
     public ConditionEvaluatorManager(List<ConditionEvaluator> evaluatorList, StringRedisTemplate redisTemplate) {
@@ -47,22 +51,44 @@ public class ConditionEvaluatorManager {
      */
     public Map<String, Double> loadMetrics(AlertConditionManager manager) {
         String stockCode = manager.getAlert().getStockCode();
-        String scope = manager.getAlertCondition().getDataScope();  // "minute" or "daily"
+        String scope = manager.getAlertCondition().getDataScope();
         String redisKey = switch (scope) {
             case "daily" -> "daily:" + stockCode;
             case "minute" -> "minute:" + stockCode;
-            default -> "stock:" + stockCode; // fallback
+            default -> "stock:" + stockCode;
         };
 
-        Map<Object, Object> raw = redisTemplate.opsForHash().entries(redisKey);
-        Map<String, Double> result = new HashMap<>();
-        raw.forEach((k, v) -> {
-            try {
-                result.put(k.toString(), Double.parseDouble(v.toString()));
-            } catch (NumberFormatException ignored) {}
-        });
+        try {
+            String json = redisTemplate.opsForValue().get(redisKey);
+            if (json == null || json.isBlank()) {
+                log.warn("⚠️ [{}] Redis key {} not found or empty", stockCode, redisKey);
+                return Collections.emptyMap();
+            }
 
-        log.info("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
-        return result;
+            // ✅ 일단 전체 Map으로 읽음
+            Map<String, Object> raw = objectMapper.readValue(json, new TypeReference<>() {});
+            Map<String, Double> result = new HashMap<>();
+
+            // ✅ 숫자(Double로 변환 가능한 항목만 필터링)
+            raw.forEach((k, v) -> {
+                if (v instanceof Number n) {
+                    result.put(k, n.doubleValue());
+                } else {
+                    try {
+                        result.put(k, Double.parseDouble(v.toString()));
+                    } catch (Exception ignored) {
+                        // date, stockCode 같은 문자열은 무시
+                    }
+                }
+            });
+
+            log.info("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
+            return result;
+
+        } catch (Exception e) {
+            log.error("❌ [{}] Redis loadMetrics 실패: {}", redisKey, e.getMessage());
+            return Collections.emptyMap();
+        }
     }
+
 }
