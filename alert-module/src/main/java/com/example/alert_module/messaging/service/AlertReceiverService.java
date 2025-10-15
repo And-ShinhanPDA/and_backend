@@ -9,6 +9,6 @@ public class AlertReceiverService {
 
     @RabbitListener(queues = "alert.queue")
     public void receive(String message) {
-        System.out.println("📩 Received message from RabbitMQ: " + message);
+        System.out.println("Received message from RabbitMQ: " + message);
     }
 }
