@@ -1,6 +1,7 @@
 package com.example.alert_module.management.controller;
 
 import com.example.alert_module.management.dto.CompanyRes;
+import com.example.alert_module.management.dto.GetCompanyRes;
 import com.example.alert_module.management.dto.ToggleRequest;
 import com.example.alert_module.management.service.CompanyService;
 import com.example.common_service.response.ApiResponse;
@@ -24,7 +25,7 @@ public class CompanyController {
             @RequestParam(required = false, defaultValue = "false") boolean alerted
     ) {
         if (alerted) {
-            List<CompanyRes> alertedCompanies = companyService.getAlertedCompanies(userId);
+            List<GetCompanyRes> alertedCompanies = companyService.getAlertedCompanies(userId);
             return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_GET_ALERTED_COMPANIES, alertedCompanies));
         }
 
