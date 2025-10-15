@@ -3,6 +3,7 @@ package com.example.alert_module.notification.message;
 
 import com.example.alert_module.notification.event.model.AlertEvent;
 import com.example.alert_module.notification.service.PushService;
+import com.example.common_service.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -12,9 +13,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RabbitListener(queues = "alert.queue")
+@RabbitListener(queues = "alert.queue", autoStartup = "true")
 public class AlertNotifier {
-
     private final PushService pushService;
 
     @RabbitHandler

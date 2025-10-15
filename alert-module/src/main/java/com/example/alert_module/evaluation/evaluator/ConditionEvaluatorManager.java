@@ -62,7 +62,7 @@ public class ConditionEvaluatorManager {
             } catch (NumberFormatException ignored) {}
         });
 
-        log.debug("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
+        log.info("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
         return result;
     }
 }
