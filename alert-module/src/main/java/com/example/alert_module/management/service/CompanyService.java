@@ -2,6 +2,7 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.history.repository.AlertHistoryRepository;
 import com.example.alert_module.management.dto.CompanyRes;
+import com.example.alert_module.management.dto.GetCompanyRes;
 import com.example.alert_module.management.dto.ToggleRequest;
 import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
@@ -28,8 +29,8 @@ public class CompanyService {
         return companyRepository.findAllCompanies();
     }
 
-    public List<CompanyRes> getAlertedCompanies(Long userId) {
-        return alertRepository.findDistinctCompaniesByUserId(userId);
+    public List<GetCompanyRes> getAlertedCompanies(Long userId) {
+        return alertRepository.findCompanyAlertCountsByUserId(userId);
     }
 
     @Transactional
