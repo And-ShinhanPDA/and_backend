@@ -47,7 +47,8 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
                                              @Param("stockCode") String stockCode,
                                              @Param("isActived") boolean isActived);
 
-    List<Alert> findByUserIdAndIsTriggered(Long userId, Boolean isTriggered);
+    List<Alert> findByUserIdAndIsTriggeredAndIsActivedTrue(Long userId, Boolean isTriggered);
+
 
     List<Alert> findByIsActivedAndStockCode(boolean isActived, String stockCode);
 

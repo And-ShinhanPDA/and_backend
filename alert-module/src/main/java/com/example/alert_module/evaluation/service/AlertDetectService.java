@@ -1,6 +1,7 @@
 package com.example.alert_module.evaluation.service;
 
 import com.example.alert_module.evaluation.evaluator.ConditionEvaluatorManager;
+import com.example.alert_module.evaluation.evaluator.service.AlertEvaluationService;
 import com.example.alert_module.notification.event.AlertEventPublisher;
 import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.entity.AlertConditionManager;
@@ -23,8 +24,9 @@ public class AlertDetectService {
     private final AlertConditionManagerRepository managerRepo;
     private final ConditionEvaluatorManager evaluatorManager;
     private final AlertEventPublisher eventPublisher;
+    private final AlertEvaluationService alertEvaluationService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void detectForStock(String stockCode) {
         List<Alert> activeAlerts = alertRepository.findByIsActivedAndStockCode(true, stockCode);
         log.info("🔹 [{}] alert 개수 = {}", stockCode, activeAlerts.size());
@@ -34,16 +36,12 @@ public class AlertDetectService {
         }
 
         for (Alert alert : activeAlerts) {
-            List<AlertConditionManager> managers = managerRepo.findByAlertId(alert.getId());
-            log.info("🔹 [{}] managers 개수 = {}", stockCode, managers.size());
-            for (AlertConditionManager manager : managers) {
-                // 🔸 data_scope별로 맞는 Redis 데이터 로드
-                Map<String, Double> metrics = evaluatorManager.loadMetrics(manager);
-                log.info("🔹 [{}] metrics = {}", stockCode, metrics);
-                if (evaluatorManager.evaluate(manager, metrics)) {
-                    eventPublisher.publish(manager);
-                }
+            if (alertEvaluationService.evaluateAlert(alert.getId())) {
+                alert.setIsTriggered(true);
+                log.info("🚀 [{}] alertId={} isTriggered={} 변경 완료", stockCode, alert.getId(),alert.getIsTriggered());
+                eventPublisher.publish(alert);
             }
         }
     }
 }
+
