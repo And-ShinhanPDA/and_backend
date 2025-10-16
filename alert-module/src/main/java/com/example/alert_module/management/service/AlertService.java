@@ -5,15 +5,16 @@ import com.example.alert_module.common.exception.ErrorCode;
 import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
-import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlertService {
@@ -267,6 +268,7 @@ public class AlertService {
 
     @Transactional
     public void toggleAlert(Long userId, Long alertId, boolean isActived) {
+        log.info("");
         Alert alert = alertRepository.findById(alertId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
 
