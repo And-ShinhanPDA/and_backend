@@ -25,9 +25,6 @@ public class AlertHistory {
     @JoinColumn(name = "alert_id", nullable = false)
     private Alert alert;
 
-    @Column(name = "is_sent", nullable = false)
-    private Boolean isSent;
-
     @Column(name = "indicator_snapshot", columnDefinition = "JSON")
     private String indicatorSnapshot;
 
