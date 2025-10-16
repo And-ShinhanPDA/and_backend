@@ -16,8 +16,7 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 @Configuration
 @EnableRabbit
 public class RabbitMQConfig {
-
-
+    
 //    @Bean
 //    public CachingConnectionFactory connectionFactory() {
 //        CachingConnectionFactory factory = new CachingConnectionFactory();
