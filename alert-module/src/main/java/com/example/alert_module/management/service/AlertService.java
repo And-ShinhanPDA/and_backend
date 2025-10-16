@@ -281,7 +281,7 @@ public class AlertService {
     }
 
     public List<AlertResponse> triggerAlert(Long userId) {
-        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggered(userId, true);
+        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggeredAndIsActivedTrue(userId, true);
 
         if (alertList.isEmpty()) return List.of();
 
