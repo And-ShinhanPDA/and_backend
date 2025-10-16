@@ -1,6 +1,7 @@
 package com.example.alert_module.evaluation.service;
 
 import com.example.alert_module.evaluation.evaluator.ConditionEvaluatorManager;
+import com.example.alert_module.evaluation.evaluator.service.AlertEvaluationService;
 import com.example.alert_module.notification.event.AlertEventPublisher;
 import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.entity.AlertConditionManager;
@@ -22,6 +23,7 @@ public class AlertDetectService {
     private final AlertConditionManagerRepository managerRepo;
     private final ConditionEvaluatorManager evaluatorManager;
     private final AlertEventPublisher eventPublisher;
+    private final AlertEvaluationService alertEvaluationService;
 
     @Transactional(readOnly = true)
     public void detectForStock(String stockCode) {
@@ -35,17 +37,10 @@ public class AlertDetectService {
 
         // 2️⃣ 각 Alert별 조건 평가
         for (Alert alert : activeAlerts) {
-            List<AlertConditionManager> managers = managerRepo.findByAlertId(alert.getId());
-            log.info("🔹 [{}] managers 개수 = {}", stockCode, managers.size());
-            for (AlertConditionManager manager : managers) {
-                // 🔸 data_scope별로 맞는 Redis 데이터 로드
-                Map<String, Double> metrics = evaluatorManager.loadMetrics(manager);
-                log.info("🔹 [{}] metrics = {}", stockCode, metrics);
-                if (evaluatorManager.evaluate(manager, metrics)) {
-                    eventPublisher.publish(manager);
-                }
+            if (alertEvaluationService.evaluateAlert(alert.getId())) {
+                eventPublisher.publish(alert);
             }
         }
     }
-
 }
+

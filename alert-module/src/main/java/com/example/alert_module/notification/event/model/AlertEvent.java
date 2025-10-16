@@ -5,7 +5,5 @@ import java.time.LocalDateTime;
 
 public record AlertEvent(
         Long userId,
-        String stockCode,
-        String conditionType,
-        LocalDateTime detectedAt
+        String stockCode
 ) implements Serializable {}

@@ -1,5 +1,6 @@
 package com.example.alert_module.notification.event;
 
+import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.notification.event.model.AlertEvent;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.common_service.config.RabbitMQConfig;
@@ -16,13 +17,10 @@ public class AlertEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void publish(AlertConditionManager manager) {
-        var alert = manager.getAlert();
+    public void publish(Alert alert) {
         var event = new AlertEvent(
                 alert.getUserId(),
-                alert.getStockCode(),
-                manager.getAlertCondition().getIndicator(),
-                LocalDateTime.now()
+                alert.getStockCode()
         );
 
         log.info("""
