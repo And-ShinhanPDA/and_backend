@@ -67,4 +67,8 @@ public class Alert {
         this.updatedAt = LocalDateTime.now();
     }
 
+    @OneToMany(mappedBy = "alert", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AlertConditionManager> conditionManagers = new ArrayList<>();
+
+
 }

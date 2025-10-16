@@ -1,31 +1,23 @@
 package com.example.alert_module.evaluation.evaluator.impl;
 
-import com.example.alert_module.evaluation.evaluator.ConditionType;
-import com.example.alert_module.evaluation.evaluator.ConditionTypeMapping;
-import com.example.alert_module.evaluation.evaluator.base.BaseRedisEvaluator;
-import com.example.alert_module.management.repository.AlertConditionManagerRepository;
+import com.example.alert_module.evaluation.evaluator.ConditionEvaluator;
+import com.example.alert_module.evaluation.evaluator.type.ConditionType;
+import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
+import com.example.alert_module.management.entity.AlertConditionManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Slf4j
 @ConditionTypeMapping(ConditionType.PRICE_RATE_BASE_DOWN)
 @Component
-public class PriceRateBaseDownEvaluator extends BaseRedisEvaluator {
-
-    public PriceRateBaseDownEvaluator(RedisTemplate<String, Object> redisTemplate,
-                                    AlertConditionManagerRepository repo) {
-        super(redisTemplate, repo);
-    }
+public class PriceRateBaseDownEvaluator implements ConditionEvaluator {
 
     @Override
-    public boolean evaluate(Long alertId, Long conditionId, String stockCode) {
-        var manager = getManager(alertId, conditionId);
-        var minute = getMinute(stockCode);
-        if (minute == null) return false;
-
-        Double price = d(minute.get("price"));       // 현재가
-        Double basePrice = manager.getThreshold2();  // 기준 시점 가격
+    public boolean evaluate(AlertConditionManager manager, Map<String, Double> metrics) {
+        Double price = metrics.get("price");
+        Double basePrice = manager.getThreshold2();
         Double pctTarget = manager.getThreshold();   // 설정 백분율
         if (price == null || basePrice == null || pctTarget == null) return false;
 
@@ -35,7 +27,7 @@ public class PriceRateBaseDownEvaluator extends BaseRedisEvaluator {
         // 상승 조건: 상승률 ≥ 설정 백분율
         boolean ok = rate <= pctTarget;
         log.info("[PRICE_RATE_BASE_DOWN] alertId={} stock={} price={} basePrice={} rate={} threshold={} → {}",
-                alertId, stockCode,
+                manager.getAlert().getId(), manager.getAlert().getStockCode(),
                 String.format("%.2f", price),
                 String.format("%.2f", basePrice),
                 String.format("%.2f", rate),

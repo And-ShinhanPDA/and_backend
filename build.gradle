@@ -53,6 +53,9 @@ project(':alert-module') {
 	dependencies {
 		implementation project(':common-module')
 		implementation project(':user-module')
+
+		implementation 'com.google.firebase:firebase-admin:9.2.0'
+
 	}
 }
 

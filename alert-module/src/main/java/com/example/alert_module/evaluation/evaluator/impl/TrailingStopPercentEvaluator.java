@@ -1,30 +1,22 @@
 package com.example.alert_module.evaluation.evaluator.impl;
 
-import com.example.alert_module.evaluation.evaluator.ConditionType;
-import com.example.alert_module.evaluation.evaluator.ConditionTypeMapping;
-import com.example.alert_module.evaluation.evaluator.base.BaseRedisEvaluator;
-import com.example.alert_module.management.repository.AlertConditionManagerRepository;
+import com.example.alert_module.evaluation.evaluator.ConditionEvaluator;
+import com.example.alert_module.evaluation.evaluator.type.ConditionType;
+import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
+import com.example.alert_module.management.entity.AlertConditionManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Slf4j
 @ConditionTypeMapping(ConditionType.TRAILING_STOP_PERCENT)
 @Component
-public class TrailingStopPercentEvaluator extends BaseRedisEvaluator {
-
-    public TrailingStopPercentEvaluator(RedisTemplate<String, Object> redisTemplate,
-                                      AlertConditionManagerRepository repo) {
-        super(redisTemplate, repo);
-    }
+public class TrailingStopPercentEvaluator implements ConditionEvaluator {
 
     @Override
-    public boolean evaluate(Long alertId, Long conditionId, String stockCode) {
-        var manager = getManager(alertId, conditionId);
-        var minute = getMinute(stockCode);
-        if (minute == null) return false;
-
-        Double price = d(minute.get("price"));       // 현재가
+    public boolean evaluate(AlertConditionManager manager, Map<String, Double> metrics) {
+        Double price = metrics.get("price");       // 현재가
         Double recentHigh = manager.getThreshold2(); // 최근 고가
         Double pctTarget = manager.getThreshold();   // 손절 기준 비율(%)
 
@@ -36,7 +28,8 @@ public class TrailingStopPercentEvaluator extends BaseRedisEvaluator {
         // 조건: 하락률 ≥ 설정 비율 → 최근 고가 대비 설정 비율 이상 하락 시 손절
         boolean ok = dropRate >= pctTarget;
         log.info("[TRAILING_STOP_PERCENT] alertId={} stock={} price={} recentHigh={} dropRate={} threshold(%)={} → {}",
-                alertId, stockCode,
+                manager.getAlert().getUserId(),
+                manager.getAlert().getStockCode(),
                 String.format("%.2f", price),
                 String.format("%.2f", recentHigh),
                 String.format("%.2f", dropRate),

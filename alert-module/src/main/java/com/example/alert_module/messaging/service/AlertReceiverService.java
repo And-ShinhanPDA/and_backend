@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AlertReceiverService {
 
-    @RabbitListener(queues = "alert.queue")
+    @RabbitListener(queues = "alert.test.queue")
     public void receive(String message) {
         System.out.println("Received message from RabbitMQ: " + message);
     }

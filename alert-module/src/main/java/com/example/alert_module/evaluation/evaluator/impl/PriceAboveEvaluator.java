@@ -1,37 +1,30 @@
 package com.example.alert_module.evaluation.evaluator.impl;
 
-import com.example.alert_module.evaluation.evaluator.ConditionType;
-import com.example.alert_module.evaluation.evaluator.ConditionTypeMapping;
-import com.example.alert_module.evaluation.evaluator.base.BaseRedisEvaluator;
-import com.example.alert_module.management.repository.AlertConditionManagerRepository;
+import com.example.alert_module.evaluation.evaluator.ConditionEvaluator;
+import com.example.alert_module.evaluation.evaluator.type.ConditionType;
+import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
+import com.example.alert_module.management.entity.AlertConditionManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Slf4j
 @ConditionTypeMapping(ConditionType.PRICE_ABOVE)
 @Component
-public class PriceAboveEvaluator extends BaseRedisEvaluator {
-
-    public PriceAboveEvaluator(RedisTemplate<String, Object> redisTemplate,
-                             AlertConditionManagerRepository repo) {
-        super(redisTemplate, repo);
-    }
+public class PriceAboveEvaluator implements ConditionEvaluator {
 
     @Override
-    public boolean evaluate(Long alertId, Long conditionId, String stockCode) {
-        var manager = getManager(alertId, conditionId);
-        var minute = getMinute(stockCode);
-        if (minute == null) return false;
+    public boolean evaluate(AlertConditionManager manager, Map<String, Double> metrics) {
+        Double price = metrics.get("price");
+        Double threshold = manager.getThreshold();
 
-        Double price = d(minute.get("price"));
-        Double target = manager.getThreshold();
-        if (price == null || target == null) return false;
+        if (price == null || threshold == null) return false;
 
-        boolean ok = price >= target;
-        log.info("[PRICE_ABOVE] alertId={} stock={} price={} target={} → {}",
-                alertId, stockCode,
-                String.format("%.2f", price), String.format("%.2f", target),
+        boolean ok = price >= threshold;
+        log.info("[PRICE_ABOVE] alertId={} stock={} price={} threshold={} → {}",
+                manager.getAlert().getId(), manager.getAlert().getStockCode(),
+                String.format("%.2f", price), String.format("%.2f", threshold),
                 ok ? "충족" : "미충족");
         return ok;
     }
