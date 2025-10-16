@@ -17,39 +17,12 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 @EnableRabbit
 public class RabbitMQConfig {
 
-    // ======================================================
-    // 🧩 RabbitMQ 접속정보 (application.yml에서 주입)
-    // ======================================================
-//    @Value("${spring.rabbitmq.addresses}")
-//    private String addresses;
 
-    @Value("${spring.rabbitmq.host}")
-    private String host;
-
-    @Value("${spring.rabbitmq.port}")
-    private int port;
-
-
-    @Value("${spring.rabbitmq.username}")
-    private String username;
-
-    @Value("${spring.rabbitmq.password}")
-    private String password;
-
-    // ======================================================
-    // 🧱 기본 연결 설정
-    // ======================================================
     @Bean
     public CachingConnectionFactory connectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory(addresses);
-        factory.setAddresses(addresses);
-        factory.setUsername(username);
-        factory.setPassword(password);
-
-        // ✅ 장애 복구시 자동 재연결
+        CachingConnectionFactory factory = new CachingConnectionFactory();
         factory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
         factory.setPublisherReturns(true);
-
         return factory;
     }
 
