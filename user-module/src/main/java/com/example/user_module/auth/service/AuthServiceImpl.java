@@ -9,6 +9,8 @@ import com.example.user_module.auth.repository.UserRepository;
 import com.example.user_module.common.security.jwt.JwtProvider;
 import com.example.user_module.common.security.jwt.domain.RefreshToken;
 import com.example.user_module.common.security.jwt.service.RefreshTokenService;
+import com.example.user_module.fcm.entity.FcmToken;
+import com.example.user_module.fcm.repository.FcmRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final FcmRepository fcmRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
@@ -40,6 +43,12 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         UserEntity saved = userRepository.save(user);
+        fcmRepository.save(FcmToken.builder()
+                .user(user)
+                .deviceId(signUpReq.deviceId())
+                .fcmToken(signUpReq.fcmToken())
+                .actived(true)
+                .build());
 
         return new AuthRes.signUpRes(saved.getId(), saved.getEmail(), saved.getName());
     }
@@ -61,6 +70,8 @@ public class AuthServiceImpl implements AuthService {
                 refreshToken,
                 LocalDateTime.now().plusDays(7)
         );
+
+        fcmRepository.activateToken(user.getId(), loginReq.deviceId());
 
         return new AuthRes.loginRes(
                 user.getId(),
