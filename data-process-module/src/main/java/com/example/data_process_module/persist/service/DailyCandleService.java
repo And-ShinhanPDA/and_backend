@@ -26,8 +26,10 @@ public class DailyCandleService {
         Double prevClose = null;
         for (DailyCandleEntity e : entities) {
             Double diff = null;
+            Double diffPer = null;
             if (prevClose != null && e.getClosePrice() != null) {
                 diff = e.getClosePrice() - prevClose;
+                diffPer = (e.getClosePrice() / prevClose * 100) - 100;
             }
             responses.add(DailyCandleResponse.builder()
                     .stockCode(e.getStockCode())
@@ -48,6 +50,7 @@ public class DailyCandleService {
                     .sma100(e.getSma100())
                     .sma200(e.getSma200())
                     .diffFromPrev(diff)
+                    .diffPerFromPrev(diffPer)
                     .build());
             prevClose = e.getClosePrice();
         }
