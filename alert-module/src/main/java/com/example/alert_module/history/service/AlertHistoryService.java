@@ -3,7 +3,9 @@ package com.example.alert_module.history.service;
 import com.example.alert_module.history.dto.AlertHeatMapDto;
 import com.example.alert_module.history.dto.AlertHistoryDto;
 import com.example.alert_module.history.dto.AlertHistoryPeriodReq;
+import com.example.alert_module.history.entity.DailyCandle;
 import com.example.alert_module.history.repository.AlertHistoryRepository;
+import com.example.alert_module.history.repository.DailyCandleRepository;
 import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.repository.AlertRepository;
 import com.example.alert_module.management.repository.CompanyRepository;
@@ -27,6 +29,7 @@ public class AlertHistoryService {
     private final AlertRepository alertRepository;
     private final AlertHistoryRepository alertHistoryRepository;
     private final CompanyRepository companyRepository;
+    private final DailyCandleRepository dailyCandleRepository;
 
 
     public List<AlertHistoryDto> getTodayHistories(Long userId) {
@@ -64,7 +67,8 @@ public class AlertHistoryService {
                 .stream().map(AlertHistoryDto::from).toList();
     }
 
-    public AlertHeatMapDto.HeatMapResponseDto getHeatMap(Long userId) {
+    public AlertHeatMapDto.HeatMapResponseDto
+    getHeatMap(Long userId) {
         List<Alert> alerts = alertRepository.findByUserId(userId);
         System.out.println("alerts" + alerts);
 
@@ -88,9 +92,33 @@ public class AlertHistoryService {
             long count = alertHistoryRepository.countByAlertIdIn(alertIds);
             totalCount += count;
 
-            alertDtos.add(new AlertHeatMapDto.HeatMapAlertDto(stockCode, count, null));
+            Map<String, Double> prices = getPreviousDayPrices(stockCode);
+            double todayOpenPrice = prices.get("close_price");
+            double yesterdayPrice = prices.get("open_price");
+
+            double price = (todayOpenPrice - yesterdayPrice) / yesterdayPrice * 100;
+            price = Math.round(price * 100.0) / 100.0;
+
+            alertDtos.add(new AlertHeatMapDto.HeatMapAlertDto(stockCode, count, price));
         }
 
         return new AlertHeatMapDto.HeatMapResponseDto(alertDtos, totalCount);
+    }
+
+    public Map<String, Double> getPreviousDayPrices(String stockCode) {
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+
+        DailyCandle prev = dailyCandleRepository
+                .findTopByStockCodeAndDateBeforeOrderByDateDesc(stockCode, today);
+
+        if (prev == null) {
+            throw new AlertException(ResponseCode.NO_PREVIOUS_CANDLE);
+        }
+
+        Map<String, Double> prices = new HashMap<>();
+        prices.put("open_price", prev.getOpenPrice());
+        prices.put("close_price", prev.getClosePrice());
+
+        return prices;
     }
 }

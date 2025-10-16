@@ -1,10 +1,11 @@
-package com.example.data_process_module.persist.entity;
+package com.example.alert_module.history.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "daily_candle")
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@IdClass(DailyCandleEntity.PK.class)
-public class DailyCandleEntity {
+@IdClass(DailyCandle.PK.class)
+public class DailyCandle {
     @Id
     @Column(name = "stock_code", length = 50, nullable = false)
     private String stockCode;

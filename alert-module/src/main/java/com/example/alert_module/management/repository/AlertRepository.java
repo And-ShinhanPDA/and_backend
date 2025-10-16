@@ -1,6 +1,7 @@
 package com.example.alert_module.management.repository;
 
 import com.example.alert_module.management.dto.CompanyRes;
+import com.example.alert_module.management.dto.GetCompanyRes;
 import com.example.alert_module.management.entity.Alert;
 
 import java.time.LocalDateTime;
@@ -17,10 +18,20 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findByUserIdAndIsActived(Long userId, Boolean isActived);
     List<Alert> findByUserIdAndStockCodeAndIsActived(Long userId, String stockCode, boolean isActived);
 
-    @Query("SELECT DISTINCT new com.example.alert_module.management.dto.CompanyRes(a.stockCode, c.name) " +
-            "FROM Alert a INNER JOIN Company c ON a.stockCode = c.stockCode " +
-            "WHERE a.userId = :userId")
-    List<CompanyRes> findDistinctCompaniesByUserId(Long userId);
+    @Query("""
+    SELECT new com.example.alert_module.management.dto.GetCompanyRes(
+        a.stockCode,
+        c.name,
+        SUM(CASE WHEN a.isActived = true THEN 1 ELSE 0 END),
+        CASE WHEN SUM(CASE WHEN a.isActived = true THEN 1 ELSE 0 END) > 0 THEN true ELSE false END
+    )
+    FROM Alert a
+    JOIN Company c ON a.stockCode = c.stockCode
+    WHERE a.userId = :userId
+    GROUP BY a.stockCode, c.name
+""")
+    List<GetCompanyRes> findCompanyAlertCountsByUserId(@Param("userId") Long userId);
+
 
     @Query("SELECT a.id FROM Alert a WHERE a.userId = :userId AND a.stockCode = :stockCode")
     List<Long> findAlertIdsByUserIdAndStockCode(@Param("userId") Long userId, @Param("stockCode") String stockCode);

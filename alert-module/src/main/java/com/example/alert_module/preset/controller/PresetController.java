@@ -59,6 +59,9 @@ public class PresetController {
         return ResponseEntity.ok(ApiResponse.success("프리셋 수정 성공", response));
     }
 
-
-
+    @GetMapping("/{presetId}")
+    public ResponseEntity<PresetResponse> getPresetById(@PathVariable Long presetId) {
+        PresetResponse response = presetService.getPresetById(presetId);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -27,4 +27,14 @@ public interface AlertConditionManagerRepository
     @Query("DELETE FROM AlertConditionManager acm WHERE acm.alert.id IN :alertIds")
     void deleteByAlertIds(@Param("alertIds") List<Long> alertIds);
     Optional<AlertConditionManager> findById_AlertIdAndId_AlertConditionId(Long alertId, Long conditionId);
+
+    @Query("""
+    SELECT m 
+    FROM AlertConditionManager m 
+    JOIN FETCH m.alert a 
+    JOIN FETCH m.alertCondition c 
+    WHERE c.indicator IN :indicators
+    """)
+    List<AlertConditionManager> findAllByAlertCondition_IndicatorIn(List<String> indicators);
+
 }
