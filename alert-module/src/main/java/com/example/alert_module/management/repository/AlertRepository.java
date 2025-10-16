@@ -51,4 +51,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
 
     List<Alert> findByIsActivedAndStockCode(boolean isActived, String stockCode);
+
+    @Query("SELECT a FROM Alert a WHERE a.stockCode IS NULL AND a.isActived = true")
+    List<Alert> findConditionAlerts();
 }

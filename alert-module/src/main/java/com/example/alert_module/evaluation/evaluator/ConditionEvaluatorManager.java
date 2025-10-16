@@ -111,5 +111,39 @@ public class ConditionEvaluatorManager {
         }
     }
 
+    public Map<String, Double> loadMetricsForStock(AlertConditionManager manager, String stockCode) {
+        String scope = manager.getAlertCondition().getDataScope();
+        String redisKey = switch (scope) {
+            case "daily" -> "daily:" + stockCode;
+            case "minute" -> "minute:" + stockCode;
+            default -> "stock:" + stockCode;
+        };
+
+        try {
+            String json = redisTemplate.opsForValue().get(redisKey);
+            if (json == null || json.isBlank()) {
+                log.warn("⚠️ [{}] Redis key {} not found or empty", stockCode, redisKey);
+                return Collections.emptyMap();
+            }
+
+            Map<String, Object> raw = objectMapper.readValue(json, new TypeReference<>() {});
+            Map<String, Double> result = new HashMap<>();
+
+            raw.forEach((k, v) -> {
+                if (v instanceof Number n) result.put(k, n.doubleValue());
+                else {
+                    try { result.put(k, Double.parseDouble(v.toString())); }
+                    catch (Exception ignored) {}
+                }
+            });
+
+            log.debug("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
+            return result;
+
+        } catch (Exception e) {
+            log.error("❌ [{}] Redis loadMetrics 실패: {}", redisKey, e.getMessage());
+            return Collections.emptyMap();
+        }
+    }
 
 }
