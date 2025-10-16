@@ -1,6 +1,10 @@
 package com.example.alert_module.notification.service;
 
+import com.example.alert_module.history.entity.AlertHistory;
+import com.example.alert_module.history.repository.AlertHistoryRepository;
+import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.notification.dto.AlertEvent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +13,10 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PushService {
+
+    private final AlertHistoryRepository alertHistoryRepository;
 
     public void send(AlertEvent event) {
         String categorySentence = makeNaturalSentence(event.categories());
@@ -20,7 +27,28 @@ public class PushService {
         log.info("🔔 [Push] userId={}, title={}, body={}",
                 event.userId(), title, body);
 
+        saveAlertHistory(event, body);
+
         // TODO: 실제 FCM 전송 or WebSocket 메시지 로직 추가
+    }
+
+    private void saveAlertHistory(AlertEvent event, String body) {
+        try {
+            Alert alert = Alert.builder()
+                    .id(event.alertId())
+                    .build();
+
+            AlertHistory history = AlertHistory.builder()
+                    .alert(alert)
+                    .indicatorSnapshot(body)
+                    .build();
+
+            alertHistoryRepository.save(history);
+
+            log.info("🧾 [AlertHistory 저장 완료] alertId={}, snapshot={}", event.alertId(), body);
+        } catch (Exception e) {
+            log.error("❌ AlertHistory 저장 실패: {}", e.getMessage());
+        }
     }
 
     private String makeNaturalSentence(Set<String> categories) {
@@ -40,8 +68,8 @@ public class PushService {
         return switch (key) {
             case "price" -> "가격";
             case "rsi_alert" -> "RSI";
-            case "sma_alert" -> "이동평균선";
-            case "fifty_two_week" -> "52주 고가/저가";
+            case "sma_alert" -> "SMA";
+            case "fifty_two_week" -> "52주";
             case "bollinger_alert" -> "볼린저밴드";
             case "volume_alert" -> "거래량";
 

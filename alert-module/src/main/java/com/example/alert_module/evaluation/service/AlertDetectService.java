@@ -25,9 +25,8 @@ public class AlertDetectService {
     private final AlertEventPublisher eventPublisher;
     private final AlertEvaluationService alertEvaluationService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void detectForStock(String stockCode) {
-        // 1️⃣ 해당 종목의 활성화된 Alert만 조회
         List<Alert> activeAlerts = alertRepository.findByIsActivedAndStockCode(true, stockCode);
         log.info("🔹 [{}] alert 개수 = {}", stockCode, activeAlerts.size());
         if (activeAlerts.isEmpty()) {
@@ -35,9 +34,10 @@ public class AlertDetectService {
             return;
         }
 
-        // 2️⃣ 각 Alert별 조건 평가
         for (Alert alert : activeAlerts) {
             if (alertEvaluationService.evaluateAlert(alert.getId())) {
+                alert.setIsTriggered(true);
+                log.info("🚀 [{}] alertId={} isTriggered={} 변경 완료", stockCode, alert.getId(),alert.getIsTriggered());
                 eventPublisher.publish(alert);
             }
         }
