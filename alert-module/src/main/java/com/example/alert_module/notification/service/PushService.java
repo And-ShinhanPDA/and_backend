@@ -68,8 +68,8 @@ public class PushService {
         return switch (key) {
             case "price" -> "가격";
             case "rsi_alert" -> "RSI";
-            case "sma_alert" -> "이동평균선";
-            case "fifty_two_week" -> "52주 고가/저가";
+            case "sma_alert" -> "SMA";
+            case "fifty_two_week" -> "52주";
             case "bollinger_alert" -> "볼린저밴드";
             case "volume_alert" -> "거래량";
 
