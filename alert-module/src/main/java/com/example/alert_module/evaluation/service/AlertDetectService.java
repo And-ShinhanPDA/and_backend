@@ -6,6 +6,7 @@ import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
 import com.example.alert_module.management.repository.AlertRepository;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ public class AlertDetectService {
 
     @Transactional(readOnly = true)
     public void detectForStock(String stockCode) {
-        // 1️⃣ 해당 종목의 활성화된 Alert만 조회
         List<Alert> activeAlerts = alertRepository.findByIsActivedAndStockCode(true, stockCode);
         log.info("🔹 [{}] alert 개수 = {}", stockCode, activeAlerts.size());
         if (activeAlerts.isEmpty()) {
@@ -33,7 +33,6 @@ public class AlertDetectService {
             return;
         }
 
-        // 2️⃣ 각 Alert별 조건 평가
         for (Alert alert : activeAlerts) {
             List<AlertConditionManager> managers = managerRepo.findByAlertId(alert.getId());
             log.info("🔹 [{}] managers 개수 = {}", stockCode, managers.size());
@@ -47,5 +46,4 @@ public class AlertDetectService {
             }
         }
     }
-
 }
