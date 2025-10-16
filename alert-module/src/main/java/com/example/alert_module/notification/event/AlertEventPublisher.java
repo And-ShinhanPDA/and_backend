@@ -1,9 +1,9 @@
 package com.example.alert_module.notification.event;
 
 import com.example.alert_module.management.entity.Alert;
+import com.example.alert_module.management.repository.CompanyRepository;
 import com.example.alert_module.notification.dto.AlertConditionDto;
 import com.example.alert_module.notification.dto.AlertEvent;
-import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.common_service.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class AlertEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
+    private final CompanyRepository companyRepository;
 
     public void publish(Alert alert) {
         Map<String, List<AlertConditionDto>> grouped = alert.getConditionManagers().stream()
@@ -35,12 +37,19 @@ public class AlertEventPublisher {
                         )
                 ));
 
+        String companyName = companyRepository.findByStockCode(alert.getStockCode())
+                .map(c -> c.getName())
+                .orElse("알 수 없음");
+
+        Set<String> categories = grouped.keySet();
+
         var event = new AlertEvent(
                 alert.getId(),
                 alert.getUserId(),
                 alert.getStockCode(),
+                companyName,
                 alert.getTitle(),
-                grouped
+                categories
         );
 
         log.info("""

@@ -1,13 +1,13 @@
 package com.example.alert_module.notification.dto;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public record AlertEvent(
         Long alertId,
         Long userId,
         String stockCode,
+        String companyName,
         String title,
-        Map<String, List<AlertConditionDto>> grouped
+        Set<String> categories
 ) implements Serializable {}
