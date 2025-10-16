@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ToggleRequest {
-    @JsonProperty("isActived")
+    @JsonProperty("isActive")
     private boolean isActived;
 }
