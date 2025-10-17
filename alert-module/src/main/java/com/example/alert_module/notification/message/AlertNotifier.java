@@ -1,9 +1,8 @@
 package com.example.alert_module.notification.message;
 
 
-import com.example.alert_module.notification.event.model.AlertEvent;
+import com.example.alert_module.notification.dto.AlertEvent;
 import com.example.alert_module.notification.service.PushService;
-import com.example.common_service.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;

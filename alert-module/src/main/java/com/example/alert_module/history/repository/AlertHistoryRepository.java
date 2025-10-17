@@ -31,7 +31,10 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
         ORDER BY h.createdAt DESC
     """)
     List<AlertHistory> findAllByUserIdAndStockCode(@Param("userId") Long userId,
+
                                                    @Param("stockCode") String stockCode);
+
+    List<AlertHistory> findAllByAlert_UserId(@Param("userId") Long userId);
 
     @Query("""
     SELECT h

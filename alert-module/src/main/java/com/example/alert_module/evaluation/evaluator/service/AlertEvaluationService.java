@@ -66,4 +66,37 @@ public class AlertEvaluationService {
         log.info("✅ [AlertEvaluationService] 최종 결과 alertId={} → {}", alertId, overall ? "충족" : "미충족");
         return overall;
     }
+
+    /**
+     * 내부적으로 특정 종목 기준 조건 탐색 수행
+     */
+    @Transactional
+    public boolean evaluateAlertForCondition(Alert alert, String stockCode) {
+        List<AlertConditionManager> managers = alert.getConditionManagers();
+
+        // 카테고리별 그룹화
+        Map<String, List<AlertConditionManager>> grouped = managers.stream()
+                .collect(Collectors.groupingBy(m -> m.getAlertCondition().getCategory()));
+
+        boolean overall = true;
+
+        for (Map.Entry<String, List<AlertConditionManager>> entry : grouped.entrySet()) {
+            String category = entry.getKey();
+            List<AlertConditionManager> list = entry.getValue();
+
+            boolean categoryResult = false;
+
+            for (AlertConditionManager manager : list) {
+                Map<String, Double> metrics = evaluatorManager.loadMetricsForStock(manager, stockCode);
+                boolean condResult = evaluatorManager.evaluate(manager, metrics);
+                categoryResult |= condResult;
+            }
+
+            log.debug("📁 [{}] {} → {}", category, stockCode, categoryResult ? "충족" : "미충족");
+            overall &= categoryResult;
+        }
+
+        return overall;
+    }
+
 }

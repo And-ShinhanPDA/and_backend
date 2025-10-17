@@ -59,30 +59,85 @@ public class ConditionEvaluatorManager {
         };
 
         try {
+            // ✅ Redis key 타입 확인
+            var type = redisTemplate.type(redisKey);
+            if (type == null) {
+                log.warn("⚠️ [{}] Redis key {} not found", stockCode, redisKey);
+                return Collections.emptyMap();
+            }
+
+            Map<String, Double> result = new HashMap<>();
+            Map<Object, Object> raw;
+
+            // ✅ 1️⃣ Hash 타입일 경우: HGETALL
+            if (type.name().equalsIgnoreCase("hash")) {
+                raw = redisTemplate.opsForHash().entries(redisKey);
+
+                // ✅ 2️⃣ String(JSON) 타입일 경우: GET + JSON 파싱
+            } else if (type.name().equalsIgnoreCase("string")) {
+                String json = redisTemplate.opsForValue().get(redisKey);
+                if (json == null || json.isBlank()) {
+                    log.warn("⚠️ [{}] Redis key {} empty (string)", stockCode, redisKey);
+                    return Collections.emptyMap();
+                }
+                Map<String, Object> parsed = objectMapper.readValue(json, new TypeReference<>() {});
+                raw = new HashMap<>(parsed);
+
+                // ✅ 3️⃣ 기타 타입 (list, set 등)
+            } else {
+                log.warn("⚠️ [{}] Redis key {} has unsupported type: {}", stockCode, redisKey, type);
+                return Collections.emptyMap();
+            }
+
+            // ✅ 공통 변환 로직 (Double로 변환 가능한 값만)
+            raw.forEach((k, v) -> {
+                try {
+                    if (v instanceof Number n) {
+                        result.put(k.toString(), n.doubleValue());
+                    } else {
+                        result.put(k.toString(), Double.parseDouble(v.toString()));
+                    }
+                } catch (Exception ignored) {
+                    // date, stockCode 같은 문자열은 무시
+                }
+            });
+
+            log.info("📊 [{}] metrics loaded from {} (type={}): {}", stockCode, redisKey, type, result.keySet());
+            return result;
+
+        } catch (Exception e) {
+            log.error("❌ [{}] Redis loadMetrics 실패: {}", redisKey, e.getMessage());
+            return Collections.emptyMap();
+        }
+    }
+
+    public Map<String, Double> loadMetricsForStock(AlertConditionManager manager, String stockCode) {
+        String scope = manager.getAlertCondition().getDataScope();
+        String redisKey = switch (scope) {
+            case "daily" -> "daily:" + stockCode;
+            case "minute" -> "minute:" + stockCode;
+            default -> "stock:" + stockCode;
+        };
+
+        try {
             String json = redisTemplate.opsForValue().get(redisKey);
             if (json == null || json.isBlank()) {
                 log.warn("⚠️ [{}] Redis key {} not found or empty", stockCode, redisKey);
                 return Collections.emptyMap();
             }
 
-            // ✅ 일단 전체 Map으로 읽음
             Map<String, Object> raw = objectMapper.readValue(json, new TypeReference<>() {});
             Map<String, Double> result = new HashMap<>();
 
-            // ✅ 숫자(Double로 변환 가능한 항목만 필터링)
             raw.forEach((k, v) -> {
-                if (v instanceof Number n) {
-                    result.put(k, n.doubleValue());
-                } else {
-                    try {
-                        result.put(k, Double.parseDouble(v.toString()));
-                    } catch (Exception ignored) {
-                        // date, stockCode 같은 문자열은 무시
-                    }
+                if (v instanceof Number n) result.put(k, n.doubleValue());
+                else {
+                    try { result.put(k, Double.parseDouble(v.toString())); }
+                    catch (Exception ignored) {}
                 }
             });
 
-            log.info("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
+            log.debug("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
             return result;
 
         } catch (Exception e) {

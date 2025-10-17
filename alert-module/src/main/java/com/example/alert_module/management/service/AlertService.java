@@ -2,6 +2,8 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.common.exception.CustomException;
 import com.example.alert_module.common.exception.ErrorCode;
+import com.example.alert_module.evaluation.entity.ConditionSearch;
+import com.example.alert_module.evaluation.repository.ConditionSearchRepository;
 import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
@@ -24,6 +26,7 @@ public class AlertService {
     private final AlertConditionManagerRepository alertConditionManagerRepository;
     private final OpenAIService openAIService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ConditionSearchRepository conditionSearchRepository;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -170,6 +173,44 @@ public class AlertService {
         alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
 
+        List<String> stockCodes = List.of(
+                "005930",  // 삼성전자
+                "000660",  // SK하이닉스
+                "373220",  // LG에너지솔루션
+                "012450",  // 한화에어로스페이스
+                "005380",  // 현대차
+                "105560",  // KB금융
+                "035420",  // NAVER
+                "329180",  // HD현대중공업
+                "068270",  // 셀트리온
+                "034020",  // 두산에너빌리티
+                "000270",  // 기아
+                "055550",  // 신한지주
+                "035720",  // 카카오
+                "086790",  // 하나금융지주
+                "015760",  // 한국전력
+                "005490",  // POSCO홀딩스
+                "011200",  // HMM
+                "138040",  // 메리츠금융지주
+                "316140",  // 우리금융지주
+                "010130"   // 고려아연
+        );
+
+        if (request.stockCode() == null) {
+            alert.setIsConditionSearch(true);
+            for (String code : stockCodes) {
+                ConditionSearch conditionSearch = ConditionSearch.builder()
+                        .alert(alert)
+                        .stockCode(code)
+                        .isTriggered(false)
+                        .triggerDate(null)
+                        .build();
+                conditionSearchRepository.save(conditionSearch);
+            }
+            log.info("🧩 조건 탐색용 알림 등록됨: alertId={}, {}개 종목 ConditionSearch 생성", alert.getId(), stockCodes.size());
+        }
+
+
         return new AlertResponse(
                 alert.getId(),
                 alert.getStockCode(),
@@ -208,6 +249,8 @@ public class AlertService {
         alert.setTitle(request.title());
         alert.setStockCode(request.stockCode());
         alert.setIsActived(request.isActive());
+        alert.setIsTriggered(false);
+
         alertRepository.save(alert);
 
         alertConditionManagerRepository.deleteAllByAlertId(alertId);
@@ -253,7 +296,6 @@ public class AlertService {
 //        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
 
-
         return new AlertResponse(
                 alert.getId(),
                 alert.getStockCode(),
@@ -281,7 +323,7 @@ public class AlertService {
     }
 
     public List<AlertResponse> triggerAlert(Long userId) {
-        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggered(userId, true);
+        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggeredAndIsActivedTrue(userId, true);
 
         if (alertList.isEmpty()) return List.of();
 

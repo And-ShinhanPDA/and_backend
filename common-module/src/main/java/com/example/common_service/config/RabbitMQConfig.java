@@ -16,15 +16,14 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 @Configuration
 @EnableRabbit
 public class RabbitMQConfig {
-
-
-    @Bean
-    public CachingConnectionFactory connectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory();
-        factory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
-        factory.setPublisherReturns(true);
-        return factory;
-    }
+    
+//    @Bean
+//    public CachingConnectionFactory connectionFactory() {
+//        CachingConnectionFactory factory = new CachingConnectionFactory();
+//        factory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
+//        factory.setPublisherReturns(true);
+//        return factory;
+//    }
 
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
