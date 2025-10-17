@@ -1,6 +1,6 @@
 //package com.example.alert_module;
 //
-//import com.example.alert_module.evaluation.service.AlertDetectService;
+//import com.example.alert_module.evaluation.evaluator.service.AlertDetectService;
 //import com.example.alert_module.management.entity.Alert;
 //import com.example.alert_module.management.entity.AlertCondition;
 //import com.example.alert_module.management.entity.AlertConditionManager;
