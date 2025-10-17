@@ -9,5 +9,6 @@ public record AlertEvent(
         String stockCode,
         String companyName,
         String title,
-        Set<String> categories
+        Set<String> categories,
+        boolean isTriggered
 ) implements Serializable {}

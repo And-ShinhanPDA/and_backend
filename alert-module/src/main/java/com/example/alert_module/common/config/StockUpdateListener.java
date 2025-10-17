@@ -1,6 +1,6 @@
 package com.example.alert_module.common.config;
 
-import com.example.alert_module.evaluation.service.AlertDetectService;
+import com.example.alert_module.evaluation.evaluator.service.AlertDetectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
