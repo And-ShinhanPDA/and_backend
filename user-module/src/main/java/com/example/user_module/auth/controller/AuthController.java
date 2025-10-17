@@ -6,7 +6,9 @@ import com.example.common_service.response.ResponseCode;
 import com.example.user_module.auth.dto.request.AuthReq;
 import com.example.user_module.auth.dto.response.AuthRes;
 import com.example.user_module.auth.service.AuthService;
+import com.example.user_module.common.security.AuthUser;
 import com.example.user_module.common.security.jwt.service.RefreshTokenService;
+import com.example.user_module.fcm.service.FcmService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +30,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
+    private final FcmService fcmService;
 
 
     @PostMapping("/signup")
@@ -60,9 +63,10 @@ public class AuthController {
                 ));
     }
 
-    @DeleteMapping("/logout/{refreshTokenId}")
-    public ResponseEntity<?> logout(@PathVariable UUID refreshTokenId) {
-        refreshTokenService.delete(refreshTokenId);
+    @DeleteMapping("/logout")
+    public ResponseEntity<?> logout(@AuthUser Long userId, @RequestBody AuthReq.logoutReq logoutReq) {
+        fcmService.deactivateFcmToken(userId, logoutReq.deviceId());
+        refreshTokenService.delete(logoutReq.refreshTokenId());
         return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_LOGOUT, "로그아웃(기기별) 완료"));
     }
 
