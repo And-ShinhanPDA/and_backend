@@ -23,7 +23,7 @@ public class ConditionDetectionScheduler {
     private final ConditionSearchRepository conditionSearchRepository;
 
     @Transactional
-    @Scheduled(cron = "0 * * * * *")
+//    @Scheduled(cron = "0 * * * * *")
     public void runConditionDetection() {
         log.info("🧭 [ConditionDetectionScheduler] 조건 탐색 스케줄 시작!");
 
