@@ -49,7 +49,8 @@ public class AlertEventPublisher {
                 alert.getStockCode(),
                 companyName,
                 alert.getTitle(),
-                categories
+                categories,
+                alert.getIsTriggered()
         );
 
         log.info("""

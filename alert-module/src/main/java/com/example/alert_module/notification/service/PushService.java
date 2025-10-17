@@ -20,15 +20,23 @@ public class PushService {
 
     public void send(AlertEvent event) {
         String categorySentence = makeNaturalSentence(event.categories());
+        if (event.isTriggered()) {
+            String title = String.format("📈[%s]%s 조건 충족!", event.companyName(), event.title());
+            String body = String.format("%s 조건을 만족했습니다.", categorySentence);
 
-        String title = String.format("📈[%s]%s 조건 충족!", event.companyName(), event.title());
-        String body = String.format("%s 조건을 만족했습니다.", categorySentence);
+            log.info("🔔 [Push] userId={}, title={}, body={}",
+                    event.userId(), title, body);
 
-        log.info("🔔 [Push] userId={}, title={}, body={}",
-                event.userId(), title, body);
+            saveAlertHistory(event, body);
+        } else {
+            String title = String.format("📈[%s]%s 조건 미충족!", event.companyName(), event.title());
+            String body = String.format("조건을 벗어났습니다.", categorySentence);
 
-        saveAlertHistory(event, body);
+            log.info("🔔 [Push] userId={}, title={}, body={}",
+                    event.userId(), title, body);
 
+            saveAlertHistory(event, body);
+        }
         // TODO: 실제 FCM 전송 or WebSocket 메시지 로직 추가
     }
 

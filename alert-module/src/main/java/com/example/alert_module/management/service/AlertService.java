@@ -249,6 +249,8 @@ public class AlertService {
         alert.setTitle(request.title());
         alert.setStockCode(request.stockCode());
         alert.setIsActived(request.isActive());
+        alert.setIsTriggered(false);
+
         alertRepository.save(alert);
 
         alertConditionManagerRepository.deleteAllByAlertId(alertId);
