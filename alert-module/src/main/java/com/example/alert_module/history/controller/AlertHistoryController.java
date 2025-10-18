@@ -26,6 +26,11 @@ public class AlertHistoryController {
         return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_TODAY_ALERT, alertHistoryService.getTodayHistories(userId)));
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<?> getAlertHistories(@AuthUser Long userId) {
+        return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_ALERT_HISTORY_ALL,alertHistoryService.getAlertHistories(userId)));
+    }
+
 
     @GetMapping("/history/{stockCode}")
     public ResponseEntity<?> getAlertHistories(
@@ -43,7 +48,7 @@ public class AlertHistoryController {
         } else {
             System.out.println("전체");
             result = alertHistoryService.getAlertHistories(userId, stockCode);
-            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_ALL;
+            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_COMPANY;
         }
 
         return ResponseEntity.ok(ApiResponse.success(responseCode, result));

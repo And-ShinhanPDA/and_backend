@@ -44,8 +44,8 @@ public class Alert {
     @Column(name = "is_condition_search")
     private Boolean isConditionSearch;
 
-    @Column(name = "field")
-    private Long field;
+    @Column(name = "isPrice")
+    private Boolean isPrice;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

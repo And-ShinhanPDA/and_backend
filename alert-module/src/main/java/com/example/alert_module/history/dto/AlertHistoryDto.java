@@ -5,16 +5,16 @@ import java.time.LocalDateTime;
 
 public record AlertHistoryDto(
         Long id,
-        Long alertId,
+        LocalDateTime createdAt,
         String indicatorSnapshot,
-        LocalDateTime createdAt
+        String stockCode
 ) {
     public static AlertHistoryDto from(AlertHistory entity) {
         return new AlertHistoryDto(
                 entity.getId(),
-                entity.getAlert().getId(),
+                entity.getCreatedAt(),
                 entity.getIndicatorSnapshot(),
-                entity.getCreatedAt()
+                entity.getAlert() != null ? entity.getAlert().getStockCode() : null
         );
     }
 }

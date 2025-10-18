@@ -36,6 +36,4 @@ public class RefreshTokenController {
                 Map.of("accessToken", newAccessToken)
         ));
     }
-
-
 }

@@ -142,7 +142,7 @@ public class AlertService {
                 throw new IllegalArgumentException("등록되지 않은 indicator: " + c.indicator());
 
             Double threshold2 = null;
-            if (isBasePriceIndicator(c.indicator())) {
+            if (isBasePriceIndicator(c.indicator()) && request.stockCode() != null) {
                 threshold2 = fetchCurrentPriceFromRedis(request.stockCode());
             }
 
@@ -251,6 +251,8 @@ public class AlertService {
         alert.setTitle(request.title());
         alert.setStockCode(request.stockCode());
         alert.setIsActived(request.isActive());
+        alert.setIsTriggered(false);
+
         alertRepository.save(alert);
 
         alertConditionManagerRepository.deleteAllByAlertId(alertId);

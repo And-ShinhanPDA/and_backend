@@ -67,6 +67,12 @@ public class AlertHistoryService {
                 .stream().map(AlertHistoryDto::from).toList();
     }
 
+    public List<AlertHistoryDto> getAlertHistories(Long userId) {
+        return alertHistoryRepository
+                .findAllByAlert_UserId(userId)
+                .stream().map(AlertHistoryDto::from).toList();
+    }
+
     public AlertHeatMapDto.HeatMapResponseDto
     getHeatMap(Long userId) {
         List<Alert> alerts = alertRepository.findByUserId(userId);
