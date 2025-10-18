@@ -5,6 +5,7 @@ import com.example.alert_module.evaluation.evaluator.service.AlertEvaluationServ
 import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
 import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.repository.AlertRepository;
+import com.example.alert_module.notification.event.AlertEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,6 +23,7 @@ public class ConditionDetectionResultScheduler {
     private final AlertRepository alertRepository;
     private final AlertEvaluationService alertEvaluationService;
     private final ConditionSearchResultRepository conditionSearchResultRepository;
+    private final AlertEventPublisher eventPublisher;
 
     @Transactional
 //    @Scheduled(cron = "0 * * * * *")
@@ -57,6 +59,7 @@ public class ConditionDetectionResultScheduler {
 
                 if (after) {
                     log.info("🚨 [조건 충족] alertId={}, stockCode={} → 트리거 ON", alert.getId(), result.getStockCode());
+                    eventPublisher.publish(alert);
                 } else {
                     log.info("🕊️ [조건 해제] alertId={}, stockCode={} → 트리거 OFF", alert.getId(), result.getStockCode());
                 }
