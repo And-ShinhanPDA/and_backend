@@ -57,6 +57,9 @@ public class AuthController {
                 .body(ApiResponse.success(
                         ResponseCode.SUCCESS_LOGIN,
                         Map.of(
+                                "userId", loginData.userId(),
+                                "email", loginData.email(),
+                                "name", loginData.name(),
                                 "accessToken", loginData.accessToken(),
                                 "refreshTokenId", loginData.refreshTokenId()
                         )
