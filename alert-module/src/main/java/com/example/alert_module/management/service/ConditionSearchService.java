@@ -2,6 +2,7 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.evaluation.entity.ConditionSearchResult;
 import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
+import com.example.alert_module.management.dto.ConditionSearchResponse;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
 import java.util.Map;
@@ -100,47 +101,55 @@ public class ConditionSearchService {
             Map.entry("VOLUME_CHANGE_PERCENT_DOWN", "전날 종가")
     );
 
-    @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public void logGroupedIndicatorValues(Long alertId) {
+    public List<ConditionSearchResponse> getConditionSearchResults(Long alertId) {
         List<AlertConditionManager> managers = alertConditionManagerRepository.findByAlert_Id(alertId);
         List<ConditionSearchResult> triggeredResults =
                 conditionSearchResultRepository.findByAlert_IdAndIsTriggeredTrue(alertId);
 
         if (triggeredResults.isEmpty() || managers.isEmpty()) {
             log.info("⚪ alertId={} 조건 탐지 없음", alertId);
-            return;
+            return List.of();
         }
 
         Set<String> activeGroups = managers.stream()
                 .map(m -> INDICATOR_TO_GROUP.getOrDefault(m.getAlertCondition().getIndicator(), "현재가"))
                 .collect(Collectors.toSet());
-
         activeGroups.add("현재가");
         activeGroups.add("거래량");
 
         log.info("🧭 [ConditionGroup] alertId={} → {}", alertId, activeGroups);
 
-        for (ConditionSearchResult result : triggeredResults) {
-            String stockCode = result.getStockCode();
-            log.info("📊 [{}] triggerDate={}", stockCode, result.getTriggerDate());
+        List<ConditionSearchResponse> responses = triggeredResults.stream()
+                .map(result -> {
+                    String stockCode = result.getStockCode();
+                    Map<String, Object> valueMap = getRedisValuesForGroups(stockCode, activeGroups);
+                    return new ConditionSearchResponse(stockCode, result.getTriggerDate(), valueMap);
+                })
+                .toList();
 
-            for (String group : activeGroups) {
-                List<String> fields = GROUP_TO_FIELDS.getOrDefault(group, List.of("price"));
-                String source = GROUP_TO_SOURCE.getOrDefault(group, "minute"); // ✅ minute or daily
-                String redisKey = source + ":" + stockCode;
+        return responses;
+    }
 
-                Map<String, Object> data = (Map<String, Object>) redisTemplate.opsForValue().get(redisKey);
-                if (data == null) {
-                    log.warn("⚠️ [{}] {} 데이터 없음 (key={})", stockCode, source, redisKey);
-                    continue;
-                }
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getRedisValuesForGroups(String stockCode, Set<String> groups) {
+        Map<String, Object> collected = new java.util.HashMap<>();
 
-                for (String field : fields) {
-                    Object val = data.get(field);
-                    log.info("   🧩 [{}] {} = {}", group, field, val);
-                }
+        for (String group : groups) {
+            List<String> fields = GROUP_TO_FIELDS.getOrDefault(group, List.of("price"));
+            String source = GROUP_TO_SOURCE.getOrDefault(group, "minute");
+            String redisKey = source + ":" + stockCode;
+
+            Map<String, Object> data = (Map<String, Object>) redisTemplate.opsForValue().get(redisKey);
+            if (data == null) continue;
+
+            for (String field : fields) {
+                Object val = data.get(field);
+                collected.put(field, val);
             }
         }
+
+        return collected;
     }
+
 }
