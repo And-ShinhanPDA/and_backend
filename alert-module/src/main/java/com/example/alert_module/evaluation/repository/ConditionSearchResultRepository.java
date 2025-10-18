@@ -15,4 +15,7 @@ public interface ConditionSearchResultRepository extends JpaRepository<Condition
     List<ConditionSearchResult> findByAlert_IdAndStockCode(Long alertId, String stockCode);
 
     List<ConditionSearchResult> findByStockCode(String stockCode);
+
+    List<ConditionSearchResult> findByAlert_IdAndIsTriggeredTrue(Long alertId);
+
 }
