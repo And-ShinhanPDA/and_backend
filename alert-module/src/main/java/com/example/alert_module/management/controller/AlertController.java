@@ -99,5 +99,14 @@ public class AlertController {
         return ResponseEntity.ok(ApiResponse.success("시가/종가 알림 설정이 변경되었습니다."));
     }
 
+    @GetMapping("/{alertId}/price")
+    public ResponseEntity<ApiResponse<Boolean>> getIsPriceAlert(
+            @PathVariable Long alertId,
+            @AuthUser Long userId
+    ) {
+        boolean isPrice = alertService.getIsPriceAlert(userId, alertId);
+        return ResponseEntity.ok(ApiResponse.success(isPrice));
+    }
+
 
 }
