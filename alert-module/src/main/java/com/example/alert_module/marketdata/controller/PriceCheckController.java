@@ -1,6 +1,7 @@
 package com.example.alert_module.marketdata.controller;
 
-import com.example.alert_module.marketdata.scheduler.PriceCheckService;
+
+import com.example.alert_module.marketdata.service.PriceCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,6 @@ public class PriceCheckController {
 
     @GetMapping("/price/{code}")
     public void checkPrice(@PathVariable String code) {
-        priceCheckService.testTodayPrice(code);
+        priceCheckService.fetchPrice(code);
     }
 }

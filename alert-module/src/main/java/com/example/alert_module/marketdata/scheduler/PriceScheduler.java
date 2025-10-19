@@ -1,8 +1,7 @@
 package com.example.alert_module.marketdata.scheduler;
 
 import com.example.alert_module.management.repository.AlertRepository;
-import com.example.alert_module.marketdata.repository.PriceCheckRepository;
-import com.example.alert_module.marketdata.service.PriceFetcher;
+import com.example.alert_module.marketdata.service.PriceCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,7 +14,7 @@ import java.util.List;
 public class PriceScheduler {
 
     private final AlertRepository alertRepository;  // ✅ 변경
-    private final PriceFetcher priceFetcher;
+    private final PriceCheckService priceFetcher;
 
     @Scheduled(cron = "0 0 9 * * MON-FRI", zone = "Asia/Seoul")
     public void sendOpenPriceAlerts() {
