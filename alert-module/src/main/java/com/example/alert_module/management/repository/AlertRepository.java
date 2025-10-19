@@ -54,4 +54,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     @Query("SELECT a FROM Alert a WHERE a.stockCode IS NULL AND a.isActived = true")
     List<Alert> findConditionAlerts();
+
+    @Query("SELECT DISTINCT a.stockCode FROM Alert a WHERE a.isPrice = true AND a.isActived = true")
+    List<String> findActivePriceAlertStockCodes();
 }
