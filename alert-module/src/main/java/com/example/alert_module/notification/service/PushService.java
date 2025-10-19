@@ -35,8 +35,8 @@ public class PushService {
     public void send(AlertEvent event) {
         String categorySentence = makeNaturalSentence(event.categories());
 
-//        String token = fcmToken.getFcmToken();
-//        String token = "dmlL26W0X05Mq8S_e8o9gP:APA91bE-VAkhYtT0sK2DkbBBW22zm7OIj_AAO741hHcOcMu4KeKDm0Vc6bUk1WlkVpyhIXYG73xBMZJwXmlavMnXpcDcYy7OOa2FcPfwgnckrBKG1hjF2ow";
+        //String token = fcmToken.getFcmToken();
+        String token = "d4azkv8-ckTGqOUtdpLsDr:APA91bEHCOEZ5xtjUCn_trQd7-SayfcoJ7xFRKR4bJNmGtPUNk9oQboctzZA4qbMer7Yg84bqRuLzzt3JIkByzoF1BEcX_Sht0D2JDxjNiKVHphVxwD3tiQ";
 
 
         PushMessage message = messageFactory.createAlertCompany(
@@ -50,10 +50,11 @@ public class PushService {
 
         saveAlertHistory(event, message.body());
 
-        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((event.userId()));
-        for (FcmToken token : tokens) {
-            notificationService.send(token.getFcmToken(), message);
-        }
+//        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((event.userId()));
+//        for (FcmToken token : tokens) {
+//            notificationService.send(token.getFcmToken(), message);
+//        }
+        notificationService.send(token, message);
 
     }
 
