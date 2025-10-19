@@ -405,4 +405,17 @@ public class AlertService {
         log.info("🔁 [Alert] isPrice 변경: alertId={}, userId={}, newValue={}",
                 alertId, userId, alert.getIsPrice());
     }
+
+    @Transactional
+    public boolean getIsPriceAlert(Long userId, Long alertId) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
+
+        if (!alert.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        return alert.getIsPrice(); // 또는 alert.isPrice()
+    }
+
 }
