@@ -95,7 +95,6 @@ public class AlertService {
                         Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
                                 acm.getAlertCondition().getId(),
                                 acm.getAlertCondition().getIndicator(),
-                                null,
                                 acm.getThreshold(),
                                 acm.getThreshold2(),
                                 acm.getAlertCondition().getDescription()
@@ -157,7 +156,6 @@ public class AlertService {
                     new AlertResponse.ConditionResponse(
                             cond.getId(),
                             cond.getIndicator(),
-                            null,
                             c.threshold(),
                             threshold2,
                             cond.getDescription()
@@ -277,7 +275,6 @@ public class AlertService {
             conditionResponses.add(new AlertResponse.ConditionResponse(
                     cond.getId(),
                     cond.getIndicator(),
-                    null,
                     c.threshold(),
                     c.threshold2(),
                     cond.getDescription()
@@ -340,7 +337,6 @@ public class AlertService {
                         Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
                                 acm.getAlertCondition().getId(),
                                 acm.getAlertCondition().getIndicator(),
-                                null,
                                 acm.getThreshold(),
                                 acm.getThreshold2(),
                                 acm.getAlertCondition().getDescription()
