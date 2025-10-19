@@ -8,24 +8,15 @@ public record AlertHistoryDto(
         Long alertId,
         LocalDateTime createdAt,
         String indicatorSnapshot,
-        StockDto stock
+        String stockCode
 ) {
     public static AlertHistoryDto from(AlertHistory entity) {
-        boolean isConditionSearch = entity.getAlert() == null
-                || entity.getAlert().getStockCode() == null
-                || entity.getAlert().getStockCode().isBlank();
-
-        String stockCode = isConditionSearch ? "조건검색" : entity.getAlert().getStockCode();
-
         return new AlertHistoryDto(
                 entity.getId(),
-                entity.getAlert() != null ? entity.getAlert().getId() : null,
+                entity.getAlert().getId(),
                 entity.getCreatedAt(),
                 entity.getIndicatorSnapshot(),
-                new StockDto(stockCode, isConditionSearch)
+                entity.getAlert().getStockCode() != null  ? entity.getAlert().getStockCode() : "조건검색"
         );
-    }
-
-    public record StockDto(String stockCode, boolean isConditionSearch) {
     }
 }
