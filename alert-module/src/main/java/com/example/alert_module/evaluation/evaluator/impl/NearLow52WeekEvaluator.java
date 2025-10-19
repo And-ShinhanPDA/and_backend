@@ -24,17 +24,20 @@ public class NearLow52WeekEvaluator implements ConditionEvaluator {
 
     @Override
     public boolean evaluate(AlertConditionManager manager, Map<String, Double> minuteMetrics) {
+        Double price = minuteMetrics.get("price");
+
         String stockCode = manager.getAlert().getStockCode();
 
-        Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+        Double low52w = null;
+        if (stockCode == null) {
+            low52w = minuteMetrics.get("lowPrice");
+        } else {
+            Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+            low52w = dailyMetrics.get("lowPrice");
+        }
 
         Double thresholdPct = manager.getThreshold(); // 접근 비율(%)
         if (thresholdPct == null) return false;
-
-        // 현재가 가져오기: minute.price → daily.closePrice → daily.openPrice 순
-        Double price = minuteMetrics.get("price");
-
-        Double low52w = dailyMetrics.get("lowPrice");
         if (price == null || low52w == null || low52w == 0) return false;
 
         // 고가 대비 현재가 차이율 계산

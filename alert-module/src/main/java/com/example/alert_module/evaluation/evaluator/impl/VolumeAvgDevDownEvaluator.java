@@ -26,7 +26,13 @@ public class VolumeAvgDevDownEvaluator implements ConditionEvaluator {
     public boolean evaluate(AlertConditionManager manager, Map<String, Double> minuteMetrics) {
         String stockCode = manager.getAlert().getStockCode();
 
-        Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+        Double avgVol20 = null;
+        if (stockCode == null) {
+            avgVol20 = minuteMetrics.get("avgVol20");
+        } else {
+            Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+            avgVol20 = dailyMetrics.get("avgVol20");
+        }
 
         Double thresholdPct = manager.getThreshold(); // 기준 백분율 (%)
         if (thresholdPct == null) return false;
@@ -36,7 +42,6 @@ public class VolumeAvgDevDownEvaluator implements ConditionEvaluator {
         if (volume == null) return false;
 
         // 평균 거래량 (20일 기준)
-        Double avgVol20 = dailyMetrics.get("avgVol20");
         if (avgVol20 == null ) return false;
 
         // 거래량 변화율 계산
