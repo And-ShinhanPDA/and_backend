@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
                 .user(user)
                 .deviceId(signUpReq.deviceId())
                 .fcmToken(signUpReq.fcmToken())
-                .actived(true)
+                .actived(false)
                 .build());
 
         return new AuthRes.signUpRes(saved.getId(), saved.getEmail(), saved.getName());

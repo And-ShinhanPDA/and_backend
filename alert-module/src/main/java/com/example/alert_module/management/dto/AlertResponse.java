@@ -31,7 +31,6 @@ public record AlertResponse(
     public record ConditionResponse(
             Long alertConditionId,
             String indicator,
-            String operator,
             Double threshold,
             Double threshold2,
             String description
