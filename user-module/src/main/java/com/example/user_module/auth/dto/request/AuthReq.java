@@ -14,7 +14,9 @@ public class AuthReq {
         String name,
         @NotBlank(message = "비밀번호 필수 입력값입니다.")
         String password,
+        @NotBlank(message = "fcm 토큰이 전달되지 않았습니다.")
         String fcmToken,
+        @NotBlank(message = "디바이스 id가 전달되지 않았습니다.")
         String deviceId
     ) { }
 
