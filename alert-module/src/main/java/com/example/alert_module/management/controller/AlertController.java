@@ -89,4 +89,15 @@ public class AlertController {
 
         return ResponseEntity.ok(ApiResponse.success("현재 조건을 만족 중인 알림들이 조회되었습니다.", response));
     }
+
+    @PatchMapping("/{alertId}/price")
+    public ResponseEntity<ApiResponse<String>> togglePriceAlert(
+            @PathVariable Long alertId,
+            @AuthUser Long userId
+    ) {
+        alertService.togglePriceAlert(userId, alertId);
+        return ResponseEntity.ok(ApiResponse.success("시가/종가 알림 설정이 변경되었습니다."));
+    }
+
+
 }

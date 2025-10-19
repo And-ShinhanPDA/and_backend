@@ -22,8 +22,13 @@ public class PriceCheckService {
     public Optional<Map<String, Object>> fetchPrice(String stockCode) {
         String redisKey = "daily:" + stockCode;
         try {
+            log.info("🔎 Redis 조회 시도: {}", redisKey); // 추가 ✅
             String json = redisTemplate.opsForValue().get(redisKey);
-            if (json == null) return Optional.empty();
+            if (json == null) {
+                log.warn("⚠️ Redis 키 없음: {}", redisKey); // 추가 ✅
+                return Optional.empty();
+            }
+            log.info("✅ Redis 응답 JSON: {}", json); // 추가 ✅
 
             Map<String, Object> data = objectMapper.readValue(json, new TypeReference<>() {});
             log.info("📊 [{}] 가격 데이터 로드: open={}, close={}", stockCode, data.get("openPrice"), data.get("closePrice"));

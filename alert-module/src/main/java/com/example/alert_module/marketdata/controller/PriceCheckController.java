@@ -1,22 +1,17 @@
 package com.example.alert_module.marketdata.controller;
 
 
+import com.example.alert_module.marketdata.scheduler.PriceScheduler;
 import com.example.alert_module.marketdata.service.PriceCheckService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/price-check")
 @RequiredArgsConstructor
 public class PriceCheckController {
 
-    private final PriceCheckService priceCheckService;
-
-    @GetMapping("/price/{code}")
-    public void checkPrice(@PathVariable String code) {
-        priceCheckService.fetchPrice(code);
-    }
+    private final PriceScheduler priceScheduler;
+    @PostMapping("/open")  public void open()  { priceScheduler.sendOpenPriceAlerts(); }
+    @PostMapping("/close") public void close() { priceScheduler.sendClosePriceAlerts(); }
 }

@@ -64,6 +64,7 @@ public class AlertService {
                 alert.getCreatedAt(),
                 alert.getUpdatedAt(),
                 conditionResponses,
+                alert.getIsPrice(),
                 alert.getAiFeedback()
         );
     }
@@ -389,4 +390,19 @@ public class AlertService {
         }
     }
 
+    @Transactional
+    public void togglePriceAlert(Long userId, Long alertId) {
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
+
+        if (!alert.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        alert.setIsPrice(!alert.getIsPrice()); // 토글
+        alertRepository.save(alert);
+
+        log.info("🔁 [Alert] isPrice 변경: alertId={}, userId={}, newValue={}",
+                alertId, userId, alert.getIsPrice());
+    }
 }
