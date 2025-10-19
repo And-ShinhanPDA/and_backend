@@ -26,7 +26,7 @@ public class ConditionDetectionResultScheduler {
     private final AlertEventPublisher eventPublisher;
 
     @Transactional
-//    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void runConditionDetectionResult() {
         log.info("🧭 [ConditionDetectionResultScheduler] 조건 탐색 스케줄 시작!");
 

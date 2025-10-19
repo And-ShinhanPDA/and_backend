@@ -112,17 +112,33 @@ public class ConditionEvaluatorManager {
     }
 
     public Map<String, Double> loadMetricsForStock(AlertConditionManager manager, String stockCode) {
-        String scope = manager.getAlertCondition().getDataScope();
-        String redisKey = switch (scope) {
-            case "daily" -> "daily:" + stockCode;
-            case "minute" -> "minute:" + stockCode;
-            default -> "stock:" + stockCode;
-        };
+        String scope = manager.getAlertCondition().getDataScope(); // "daily" | "minute" | "both"
 
+        // ✅ 기본적으로 minute/daily 두 개 key를 다 불러옴
+        String minuteKey = "minute:" + stockCode;
+        String dailyKey = "daily:" + stockCode;
+
+        Map<String, Double> minuteMetrics = readRedisMetrics(minuteKey);
+        Map<String, Double> dailyMetrics = readRedisMetrics(dailyKey);
+
+        // ✅ 병합 (minute이 우선, daily 값은 없는 키만 채움)
+        Map<String, Double> merged = new HashMap<>(dailyMetrics);
+        merged.putAll(minuteMetrics);
+
+        log.info("📊 [{}] metrics merged: minute={} daily={} total={}",
+                stockCode, minuteMetrics.size(), dailyMetrics.size(), merged.size());
+
+        return merged;
+    }
+
+    /**
+     * Redis에서 key별 metric 데이터 읽기 (string/json 구조 모두 지원)
+     */
+    private Map<String, Double> readRedisMetrics(String redisKey) {
         try {
             String json = redisTemplate.opsForValue().get(redisKey);
             if (json == null || json.isBlank()) {
-                log.warn("⚠️ [{}] Redis key {} not found or empty", stockCode, redisKey);
+                log.warn("⚠️ Redis key {} not found or empty", redisKey);
                 return Collections.emptyMap();
             }
 
@@ -137,13 +153,14 @@ public class ConditionEvaluatorManager {
                 }
             });
 
-            log.debug("📊 [{}] metrics loaded from {}: {}", stockCode, redisKey, result.keySet());
+            log.debug("📊 Redis metrics loaded [{}]: {} keys", redisKey, result.keySet());
             return result;
 
         } catch (Exception e) {
-            log.error("❌ [{}] Redis loadMetrics 실패: {}", redisKey, e.getMessage());
+            log.error("❌ Redis loadMetrics 실패 [{}]: {}", redisKey, e.getMessage());
             return Collections.emptyMap();
         }
     }
+
 
 }
