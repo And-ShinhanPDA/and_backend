@@ -67,6 +67,17 @@ public class AlertHistoryService {
                 .stream().map(AlertHistoryDto::from).toList();
     }
 
+    public List<AlertHistoryDto> getHistoriesByPeriod(Long userId, LocalDate start, LocalDate end) {
+        return alertHistoryRepository
+                .findAllByUserIdAndCreatedAtBetween(
+                        userId,
+                        start.atStartOfDay(),
+                        end.plusDays(1).atStartOfDay())
+                .stream()
+                .map(AlertHistoryDto::from)
+                .toList();
+    }
+
     public List<AlertHistoryDto> getAlertHistories(Long userId) {
         return alertHistoryRepository
                 .findAllByAlert_UserId(userId)

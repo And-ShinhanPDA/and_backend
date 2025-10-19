@@ -52,5 +52,20 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
             @Param("end") LocalDateTime end
     );
 
+    @Query("""
+    SELECT h
+    FROM AlertHistory h
+    JOIN h.alert a
+    WHERE a.userId = :userId
+      AND h.createdAt BETWEEN :start AND :end
+    ORDER BY h.createdAt DESC
+""")
+    List<AlertHistory> findAllByUserIdAndCreatedAtBetween(
+            @Param("userId") Long userId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+
     Long countByAlertIdIn(List<Long> alertIds);
 }
