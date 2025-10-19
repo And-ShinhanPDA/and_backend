@@ -3,7 +3,9 @@ package com.example.alert_module.management.service;
 import com.example.alert_module.common.exception.CustomException;
 import com.example.alert_module.common.exception.ErrorCode;
 import com.example.alert_module.evaluation.entity.ConditionSearch;
+import com.example.alert_module.evaluation.entity.ConditionSearchResult;
 import com.example.alert_module.evaluation.repository.ConditionSearchRepository;
+import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
 import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
@@ -26,7 +28,8 @@ public class AlertService {
     private final AlertConditionManagerRepository alertConditionManagerRepository;
     private final OpenAIService openAIService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ConditionSearchRepository conditionSearchRepository;
+//    private final ConditionSearchRepository conditionSearchRepository;
+    private final ConditionSearchResultRepository conditionSearchResultRepository;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -139,7 +142,7 @@ public class AlertService {
                 throw new IllegalArgumentException("등록되지 않은 indicator: " + c.indicator());
 
             Double threshold2 = null;
-            if (isBasePriceIndicator(c.indicator())) {
+            if (isBasePriceIndicator(c.indicator()) && request.stockCode() != null) {
                 threshold2 = fetchCurrentPriceFromRedis(request.stockCode());
             }
 
@@ -199,17 +202,16 @@ public class AlertService {
         if (request.stockCode() == null) {
             alert.setIsConditionSearch(true);
             for (String code : stockCodes) {
-                ConditionSearch conditionSearch = ConditionSearch.builder()
+                ConditionSearchResult conditionSearch = ConditionSearchResult.builder()
                         .alert(alert)
                         .stockCode(code)
                         .isTriggered(false)
                         .triggerDate(null)
                         .build();
-                conditionSearchRepository.save(conditionSearch);
+                conditionSearchResultRepository.save(conditionSearch);
             }
             log.info("🧩 조건 탐색용 알림 등록됨: alertId={}, {}개 종목 ConditionSearch 생성", alert.getId(), stockCodes.size());
         }
-
 
         return new AlertResponse(
                 alert.getId(),

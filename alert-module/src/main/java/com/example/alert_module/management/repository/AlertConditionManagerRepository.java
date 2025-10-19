@@ -37,4 +37,5 @@ public interface AlertConditionManagerRepository
     """)
     List<AlertConditionManager> findAllByAlertCondition_IndicatorIn(List<String> indicators);
 
+    List<AlertConditionManager> findByAlert_Id(Long alertId);
 }
