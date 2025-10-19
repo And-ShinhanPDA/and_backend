@@ -1,6 +1,7 @@
 package com.example.alert_module.management.controller;
 
 import com.example.alert_module.management.dto.ConditionSearchResponse;
+import com.example.alert_module.management.dto.ConditionTriggeredRes;
 import com.example.alert_module.management.service.ConditionSearchService;
 import com.example.common_service.response.ApiResponse;
 import com.example.common_service.response.ResponseCode;
@@ -32,6 +33,18 @@ public class ConditionSearchController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         ResponseCode.SUCCESS_GET_CONDITION_SEARCH_RESULTS,
+                        results
+                )
+        );
+    }
+
+    @GetMapping("/condition/triggered")
+    public ResponseEntity<?> getTriggeredConditions(@AuthUser Long userId) {
+        List<ConditionTriggeredRes> results = conditionSearchService.getTriggeredConditionSummary(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        ResponseCode.SUCCESS_GET_TRIGGERED_CONDITION_SUMMARY,
                         results
                 )
         );
