@@ -3,10 +3,12 @@ package com.example.alert_module.management.service;
 import com.example.alert_module.evaluation.entity.ConditionSearchResult;
 import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
 import com.example.alert_module.management.dto.ConditionSearchResponse;
+import com.example.alert_module.management.dto.ConditionTriggeredRes;
 import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
 import com.example.alert_module.management.repository.AlertRepository;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -155,9 +157,29 @@ public class ConditionSearchService {
         return collected;
     }
 
-    public void logActiveConditionAlerts(Long userId) {
+    public List<ConditionTriggeredRes> getTriggeredConditionSummary(Long userId) {
         List<Alert> alerts = alertRepository.findByUserIdAndStockCode(userId, null);
         log.info("[ConditionTriggerService] userId={}의 조건 탐색형 알림 개수: {}", userId, alerts.size());
-        alerts.forEach(a -> log.info("🔔 alertId={}, title={}", a.getId(), a.getTitle()));
+
+        List<ConditionTriggeredRes> responseList = new ArrayList<>();
+
+        if (alerts.isEmpty()) {
+            log.info("[ConditionTriggerService] 조건 탐색형 알림이 없습니다.");
+            return responseList;
+        }
+
+        for (Alert alert : alerts) {
+            List<ConditionSearchResult> triggeredResults =
+                    conditionSearchResultRepository.findByAlert_IdAndIsTriggeredTrue(alert.getId());
+            int triggeredCount = triggeredResults.size();
+
+            String conditionName = alert.getTitle();
+            responseList.add(new ConditionTriggeredRes(conditionName, (long) triggeredCount));
+
+            log.info("🔔 alertId={}, title={}, triggered 기업 수={}",
+                    alert.getId(), alert.getTitle(), triggeredCount);
+        }
+
+        return responseList;
     }
 }
