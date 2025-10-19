@@ -2,8 +2,10 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.common.exception.CustomException;
 import com.example.alert_module.common.exception.ErrorCode;
+import com.example.alert_module.evaluation.entity.ConditionBase;
 import com.example.alert_module.evaluation.entity.ConditionSearch;
 import com.example.alert_module.evaluation.entity.ConditionSearchResult;
+import com.example.alert_module.evaluation.repository.ConditionBaseRepository;
 import com.example.alert_module.evaluation.repository.ConditionSearchRepository;
 import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
 import com.example.alert_module.management.dto.*;
@@ -30,6 +32,7 @@ public class AlertService {
     private final RedisTemplate<String, Object> redisTemplate;
 //    private final ConditionSearchRepository conditionSearchRepository;
     private final ConditionSearchResultRepository conditionSearchResultRepository;
+    private final ConditionBaseRepository conditionBaseRepository;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -200,6 +203,17 @@ public class AlertService {
 
         if (request.stockCode() == null) {
             alert.setIsConditionSearch(true);
+
+            Set<String> baseIndicators = Set.of(
+                    "PRICE_CHANGE_BASE_UP",
+                    "PRICE_CHANGE_BASE_DOWN",
+                    "PRICE_RATE_BASE_UP",
+                    "PRICE_RATE_BASE_DOWN"
+            );
+
+            boolean hasBaseIndicator = request.conditions().stream()
+                    .anyMatch(c -> baseIndicators.contains(c.indicator()));
+
             for (String code : stockCodes) {
                 ConditionSearchResult conditionSearch = ConditionSearchResult.builder()
                         .alert(alert)
@@ -208,6 +222,17 @@ public class AlertService {
                         .triggerDate(null)
                         .build();
                 conditionSearchResultRepository.save(conditionSearch);
+
+                if (hasBaseIndicator) {
+                    Double currentPrice = fetchCurrentPriceFromRedis(code); // or external API
+                    ConditionBase conditionBase = ConditionBase.builder()
+                            .alertId(alert.getId())
+                            .stockCode(code)
+                            .baseValue(currentPrice)
+                            .build();
+                    conditionBaseRepository.save(conditionBase);
+                    log.info("📊 기준시점 저장: {} / baseValue={}", code, currentPrice);
+                }
             }
             log.info("🧩 조건 탐색용 알림 등록됨: alertId={}, {}개 종목 ConditionSearch 생성", alert.getId(), stockCodes.size());
         }

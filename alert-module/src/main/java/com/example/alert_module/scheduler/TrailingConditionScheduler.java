@@ -30,6 +30,9 @@ public class TrailingConditionScheduler {
 
         for (AlertConditionManager m : trailingManagers) {
             String stockCode = m.getAlert().getStockCode();
+
+            if (stockCode == null) continue;
+
             Map<String, Object> minute = (Map<String, Object>) redisTemplate.opsForValue().get("minute:" + stockCode);
             if (minute == null) continue;
 
