@@ -24,13 +24,17 @@ public class High52WeekEvaluator implements ConditionEvaluator {
 
     @Override
     public boolean evaluate(AlertConditionManager manager, Map<String, Double> minuteMetrics) {
+        Double price = minuteMetrics.get("price");
+
         String stockCode = manager.getAlert().getStockCode();
 
-        // 🔹 52주 데이터는 daily Redis에서 가져옴
-        Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
-
-        Double price = minuteMetrics.get("price");
-        Double high52w = dailyMetrics.get("highPrice"); // Redis에서 저장된 필드명에 맞게 수정
+        Double high52w = null;
+        if (stockCode == null) {
+            high52w = minuteMetrics.get("highPrice");
+        } else {
+            Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+            high52w = dailyMetrics.get("highPrice");
+        }
 
         if (price == null || high52w == null) return false;
 

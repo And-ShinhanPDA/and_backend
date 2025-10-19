@@ -12,6 +12,7 @@ import com.example.alert_module.management.repository.CompanyRepository;
 import com.example.common_service.exception.AlertException;
 import com.example.common_service.response.ResponseCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlertHistoryService {
@@ -94,6 +96,7 @@ public class AlertHistoryService {
         }
 
         Map<String, List<Long>> stockAlertMap = alerts.stream()
+                .filter(a -> a.getStockCode() != null)
                 .collect(Collectors.groupingBy(
                         Alert::getStockCode,
                         Collectors.mapping(Alert::getId, Collectors.toList())

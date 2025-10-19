@@ -7,4 +7,5 @@ import java.time.LocalDateTime;
 
 public interface DailyCandleRepository extends JpaRepository<DailyCandle, DailyCandle.PK> {
     DailyCandle findTopByStockCodeAndDateBeforeOrderByDateDesc(String stockCode, LocalDateTime date);
+
 }

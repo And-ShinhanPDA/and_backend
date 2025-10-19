@@ -24,18 +24,21 @@ public class NearHigh52WeekEvaluator implements ConditionEvaluator {
 
     @Override
     public boolean evaluate(AlertConditionManager manager, Map<String, Double> minuteMetrics) {
+        Double price = minuteMetrics.get("price");
+
         String stockCode = manager.getAlert().getStockCode();
 
-        Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+        Double high52w = null;
+        if (stockCode == null) {
+            high52w = minuteMetrics.get("highPrice");
+        } else {
+            Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+            high52w = dailyMetrics.get("highPrice");
+        }
 
         Double thresholdPct = manager.getThreshold(); // 접근 비율(%)
         if (thresholdPct == null) return false;
 
-        // 현재가 가져오기: minute.price → daily.closePrice → daily.openPrice 순
-        Double price = minuteMetrics.get("price");
-
-        // 52주 최고가
-        Double high52w = dailyMetrics.get("highPrice");
         if (price == null || high52w == null || high52w == 0) return false;
 
         // 고가 대비 현재가 차이율 계산
