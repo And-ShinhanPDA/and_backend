@@ -36,4 +36,10 @@ public class ConditionSearchController {
                 )
         );
     }
+
+    @GetMapping("/condition/triggered")
+    public ResponseEntity<String> getTriggeredConditions(@AuthUser Long userId) {
+        conditionSearchService.logActiveConditionAlerts(userId);
+        return ResponseEntity.ok("Condition-triggered alert logs printed successfully");
+    }
 }

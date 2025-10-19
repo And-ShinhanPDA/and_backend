@@ -3,8 +3,10 @@ package com.example.alert_module.management.service;
 import com.example.alert_module.evaluation.entity.ConditionSearchResult;
 import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
 import com.example.alert_module.management.dto.ConditionSearchResponse;
+import com.example.alert_module.management.entity.Alert;
 import com.example.alert_module.management.entity.AlertConditionManager;
 import com.example.alert_module.management.repository.AlertConditionManagerRepository;
+import com.example.alert_module.management.repository.AlertRepository;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ public class ConditionSearchService {
     private final ConditionSearchResultRepository conditionSearchResultRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final AlertRepository alertRepository;
 
     private static final Map<String, String> GROUP_TO_SOURCE = Map.ofEntries(
             Map.entry("현재가", "minute"),
@@ -152,4 +155,9 @@ public class ConditionSearchService {
         return collected;
     }
 
+    public void logActiveConditionAlerts(Long userId) {
+        List<Alert> alerts = alertRepository.findByUserIdAndStockCode(userId, null);
+        log.info("[ConditionTriggerService] userId={}의 조건 탐색형 알림 개수: {}", userId, alerts.size());
+        alerts.forEach(a -> log.info("🔔 alertId={}, title={}", a.getId(), a.getTitle()));
+    }
 }
