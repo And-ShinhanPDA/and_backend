@@ -14,8 +14,11 @@ public enum ResponseCode {
     SUCCESS_REISSUE("SUCCESS_REISSUE", "토큰 재발급에 성공하였습니다.", HttpStatus.OK),
 
     SUCCESS_TODAY_ALERT("SUCCESS_TODAY_ALERT", "오늘 울린 알림 조회에 성공하였습니다.", HttpStatus.OK),
-    SUCCESS_ALERT_HISTORY_ALL("SUCCESS_ALERT_HISTORY_ALL", "알림 히스토리 조회에 성공하였습니다.", HttpStatus.OK),
-    SUCCESS_ALERT_HISTORY_PERIOD("SUCCESS_ALERT_HISTORY_PERIOD", "알림 히스토리 특정 기간 조회에 성공하였습니다.", HttpStatus.OK),
+
+    SUCCESS_ALERT_HISTORY_ALL("SUCCESS_ALERT_HISTORY_ALL", "알림 히스토리 전체 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_ALERT_HISTORY_ALL_PERIOD("SUCCESS_ALERT_HISTORY_ALL_PERIOD", "알림 히스토리 기간별 전체 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_ALERT_HISTORY_COMPANY("SUCCESS_ALERT_HISTORY_COMPANY", "알림 히스토리 기업별 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_ALERT_HISTORY_COMPANY_PERIOD("SUCCESS_ALERT_HISTORY_COMPANY_PERIOD", "알림 히스토리 기간별 기업별 조회에 성공하였습니다.", HttpStatus.OK),
 
     SUCCESS_GET_ALERTED_COMPANIES("SUCCESS_GET_ALERTED_COMPANIES", "알림 설정한 기업 조회에 성공하였습니다.", HttpStatus.OK),
     SUCCESS_GET_ALL_COMPANIES("SUCCESS_GET_ALERTED_COMPANIES", "전체 기업 조회에 성공하였습니다.", HttpStatus.OK),
@@ -24,6 +27,10 @@ public enum ResponseCode {
     SUCCESS_ALERT_HEATMAP("SUCCESS_ALERT_HEATMAP", "일주일동안 울린 알림 조회에 성공하였습니다.", HttpStatus.OK),
     SUCCESS_GET_DAILY_CANDLE("SUCCESS_GET_DAILY_CANDLE", "일봉 데이터 조회에 성공하였습니다.", HttpStatus.OK),
     SUCCESS_GET_MINUTE_CANDLE("SUCCESS_GET_MINUTE_CANDLE", "분봉 데이터 조회에 성공하였습니다.", HttpStatus.OK),
+    SUCCESS_GET_CURRENT_PRICE("SUCCESS_GET_CURRENT_PRICE", "주식의 현재가 조회에 성공하였습니다.", HttpStatus.OK),
+
+    SUCCESS_GET_CONDITION_SEARCH_RESULTS("SUCCESS_GET_CONDITION_SEARCH_RESULTS", "조건 탐색 결과 조회에 성공하였습니다", HttpStatus.OK),
+    SUCCESS_GET_TRIGGERED_CONDITION_SUMMARY("SUCCESS_GET_TRIGGERED_CONDITION_SUMMARY","유저별 조건 알림 조회에 성공하였습니다.",HttpStatus.OK),
 
     USER_EXIST("USER_EXIST", "이미 존재하는 회원이 있습니다.", HttpStatus.BAD_REQUEST),
     INVALID_INPUT("INVALID_INPUT", "입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
@@ -38,7 +45,10 @@ public enum ResponseCode {
     STOCK_NOT_FOUND("STOCK_NOT_FOUND", "해당하는 종목이 없습니다.", HttpStatus.NOT_FOUND),
     NO_EXIST_ALERT("NO_EXIST_ALERT", "삭제할 알림이 없습니다.", HttpStatus.NOT_FOUND),
 
+    NO_PREVIOUS_CANDLE("NO_PREVIOUS_CANDLE", "차트 데이터가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+
 
     private final String code;
     private final String message;

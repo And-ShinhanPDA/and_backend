@@ -31,7 +31,10 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
         ORDER BY h.createdAt DESC
     """)
     List<AlertHistory> findAllByUserIdAndStockCode(@Param("userId") Long userId,
+
                                                    @Param("stockCode") String stockCode);
+
+    List<AlertHistory> findAllByAlert_UserId(@Param("userId") Long userId);
 
     @Query("""
     SELECT h
@@ -48,6 +51,21 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
+
+    @Query("""
+    SELECT h
+    FROM AlertHistory h
+    JOIN h.alert a
+    WHERE a.userId = :userId
+      AND h.createdAt BETWEEN :start AND :end
+    ORDER BY h.createdAt DESC
+""")
+    List<AlertHistory> findAllByUserIdAndCreatedAtBetween(
+            @Param("userId") Long userId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
 
     Long countByAlertIdIn(List<Long> alertIds);
 }

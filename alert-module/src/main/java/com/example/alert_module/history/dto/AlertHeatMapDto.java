@@ -7,7 +7,7 @@ public class AlertHeatMapDto {
     public record HeatMapAlertDto(
             String stockCode,
             Long alertCount,
-            Double price // null 허용 (현재 미사용)
+            Double priceRate
     ) {}
 
     public record HeatMapResponseDto(

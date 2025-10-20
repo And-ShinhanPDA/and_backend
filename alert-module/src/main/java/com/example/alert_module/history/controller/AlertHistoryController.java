@@ -26,6 +26,27 @@ public class AlertHistoryController {
         return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS_TODAY_ALERT, alertHistoryService.getTodayHistories(userId)));
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<?> getAlertHistories(
+            @AuthUser Long userId,
+            @ModelAttribute AlertHistoryPeriodReq period) {
+        List<AlertHistoryDto> result;
+        ResponseCode responseCode;
+
+        if (period.start() != null && period.end() != null) {
+            System.out.println("특정 기간");
+            result = alertHistoryService.getHistoriesByPeriod(userId, period.start(), period.end());
+            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_ALL_PERIOD;
+        } else {
+            System.out.println("전체");
+            result = alertHistoryService.getAlertHistories(userId);
+            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_ALL;
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(responseCode, result));
+
+    }
+
 
     @GetMapping("/history/{stockCode}")
     public ResponseEntity<?> getAlertHistories(
@@ -39,11 +60,11 @@ public class AlertHistoryController {
         if (period.start() != null && period.end() != null) {
             System.out.println("특정 기간");
             result = alertHistoryService.getHistoriesByPeriod(userId, stockCode, period.start(), period.end());
-            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_PERIOD;
+            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_COMPANY_PERIOD;
         } else {
             System.out.println("전체");
             result = alertHistoryService.getAlertHistories(userId, stockCode);
-            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_ALL;
+            responseCode = ResponseCode.SUCCESS_ALERT_HISTORY_COMPANY;
         }
 
         return ResponseEntity.ok(ApiResponse.success(responseCode, result));

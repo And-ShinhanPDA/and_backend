@@ -30,5 +30,6 @@ public class DailyCandleResponse {
     private Double sma200;
 
     private Double diffFromPrev;
+    private Double diffPerFromPrev;
 }
 

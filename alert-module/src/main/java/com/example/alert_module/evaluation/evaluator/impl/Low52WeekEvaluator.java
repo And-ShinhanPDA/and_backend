@@ -1,42 +1,93 @@
 package com.example.alert_module.evaluation.evaluator.impl;
 
-import com.example.alert_module.evaluation.evaluator.ConditionType;
-import com.example.alert_module.evaluation.evaluator.ConditionTypeMapping;
-import com.example.alert_module.evaluation.evaluator.base.BaseRedisEvaluator;
-import com.example.alert_module.management.repository.AlertConditionManagerRepository;
+import com.example.alert_module.evaluation.evaluator.ConditionEvaluator;
+import com.example.alert_module.evaluation.evaluator.type.ConditionType;
+import com.example.alert_module.evaluation.evaluator.type.ConditionTypeMapping;
+import com.example.alert_module.management.entity.AlertConditionManager;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @ConditionTypeMapping(ConditionType.LOW_52W)
 @Component
-public class Low52WeekEvaluator extends BaseRedisEvaluator {
+@RequiredArgsConstructor
+public class Low52WeekEvaluator implements ConditionEvaluator {
 
-    public Low52WeekEvaluator(RedisTemplate<String, Object> redisTemplate,
-                                      AlertConditionManagerRepository repo) {
-        super(redisTemplate, repo);
-    }
+    private final StringRedisTemplate redisTemplate;
 
     @Override
-    public boolean evaluate(Long alertId, Long conditionId, String stockCode) {
-        var manager = getManager(alertId, conditionId);
-        var daily = getDaily(stockCode);
-        var minute = getMinute(stockCode);
-        if (daily == null) return false;
-        if (minute == null) return false;
+    public boolean evaluate(AlertConditionManager manager, Map<String, Double> minuteMetrics) {
+        Double price = minuteMetrics.get("price");
 
-        Double price = d(minute.get("price"));
-        Double low52w = d(daily.get("lowPrice"));
+        String stockCode = manager.getAlert().getStockCode();
+
+        Double low52w = null;
+        if (stockCode == null) {
+            low52w = minuteMetrics.get("lowPrice");
+        } else {
+            Map<String, Double> dailyMetrics = loadRedisMetrics("daily:" + stockCode);
+            low52w = dailyMetrics.get("lowPrice");
+        }
 
         if (price == null || low52w == null) return false;
 
-        boolean ok = price <= low52w;
-        log.info("[LOW_52W] alertId={} stock={} price={} low_52w={} → {}",
-                alertId, stockCode,
+        boolean ok = price >= low52w;
+
+        log.info("[LOW_52W] userId={} stock={} price={} low52w={} → {}",
+                manager.getAlert().getUserId(), stockCode,
                 String.format("%.2f", price),
                 String.format("%.2f", low52w),
                 ok ? "충족" : "미충족");
+
         return ok;
     }
+
+    private Map<String, Double> loadRedisMetrics(String redisKey) {
+        Map<String, Double> result = new HashMap<>();
+
+        try {
+            var type = redisTemplate.type(redisKey);
+            if (type == null) {
+                log.warn("⚠️ Redis key {} not found", redisKey);
+                return result;
+            }
+
+            // ✅ key 타입에 따라 분기
+            Map<Object, Object> raw;
+            if (type.name().equalsIgnoreCase("hash")) {
+                // Hash 구조일 때 (HGETALL)
+                raw = redisTemplate.opsForHash().entries(redisKey);
+            } else if (type.name().equalsIgnoreCase("string")) {
+                // String(JSON) 구조일 때 (GET)
+                String json = redisTemplate.opsForValue().get(redisKey);
+                if (json == null || json.isBlank()) return result;
+                raw = new ObjectMapper().readValue(json, new TypeReference<>() {});
+            } else {
+                log.warn("⚠️ Redis key {} has unsupported type: {}", redisKey, type);
+                return result;
+            }
+
+            // ✅ 공통 변환 로직
+            raw.forEach((k, v) -> {
+                try {
+                    result.put(k.toString(), Double.parseDouble(v.toString()));
+                } catch (NumberFormatException ignored) {}
+            });
+
+            log.info("📊 Redis metrics loaded [{}]: {} keys", redisKey, result.size());
+            return result;
+
+        } catch (Exception e) {
+            log.error("❌ Redis loadRedisMetrics 실패 [{}]: {}", redisKey, e.getMessage());
+            return result;
+        }
+    }
+
 }

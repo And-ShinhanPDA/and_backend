@@ -1,6 +1,7 @@
 package com.example.alert_module.management.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +29,8 @@ public class AlertConditionManager {
 
     @Column(name = "threshold2")
     private Double threshold2;
+
+
 
     public static AlertConditionManager of(Alert alert, AlertCondition cond, Double t1, Double t2) {
         AlertConditionManager m = new AlertConditionManager();

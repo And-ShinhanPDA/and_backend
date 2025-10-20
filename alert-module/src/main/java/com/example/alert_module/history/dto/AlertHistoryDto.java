@@ -6,17 +6,17 @@ import java.time.LocalDateTime;
 public record AlertHistoryDto(
         Long id,
         Long alertId,
-        Boolean isSent,
+        LocalDateTime createdAt,
         String indicatorSnapshot,
-        LocalDateTime createdAt
+        String stockCode
 ) {
     public static AlertHistoryDto from(AlertHistory entity) {
         return new AlertHistoryDto(
                 entity.getId(),
                 entity.getAlert().getId(),
-                entity.getIsSent(),
+                entity.getCreatedAt(),
                 entity.getIndicatorSnapshot(),
-                entity.getCreatedAt()
+                entity.getAlert().getStockCode() != null  ? entity.getAlert().getStockCode() : "조건검색"
         );
     }
 }

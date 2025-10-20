@@ -2,17 +2,25 @@ package com.example.alert_module.management.service;
 
 import com.example.alert_module.common.exception.CustomException;
 import com.example.alert_module.common.exception.ErrorCode;
+import com.example.alert_module.evaluation.entity.ConditionBase;
+import com.example.alert_module.evaluation.entity.ConditionSearch;
+import com.example.alert_module.evaluation.entity.ConditionSearchResult;
+import com.example.alert_module.evaluation.repository.ConditionBaseRepository;
+import com.example.alert_module.evaluation.repository.ConditionSearchRepository;
+import com.example.alert_module.evaluation.repository.ConditionSearchResultRepository;
 import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
-import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlertService {
@@ -20,7 +28,12 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final AlertConditionRepository alertConditionRepository;
     private final AlertConditionManagerRepository alertConditionManagerRepository;
-//    private final OpenAIService openAIService;
+    private final OpenAIService openAIService;
+    private final RedisTemplate<String, Object> redisTemplate;
+//    private final ConditionSearchRepository conditionSearchRepository;
+    private final ConditionSearchResultRepository conditionSearchResultRepository;
+    private final ConditionBaseRepository conditionBaseRepository;
+    private final AlertPriceRepository alertPriceRepository;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -55,6 +68,7 @@ public class AlertService {
                 alert.getCreatedAt(),
                 alert.getUpdatedAt(),
                 conditionResponses,
+                alert.getIsPrice(),
                 alert.getAiFeedback()
         );
     }
@@ -72,6 +86,7 @@ public class AlertService {
             alerts = alertRepository.findByUserId(userId);
         }
 
+
         if (alerts.isEmpty()) return List.of();
 
         List<Long> alertIds = alerts.stream().map(Alert::getId).toList();
@@ -85,7 +100,6 @@ public class AlertService {
                         Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
                                 acm.getAlertCondition().getId(),
                                 acm.getAlertCondition().getIndicator(),
-                                null, // operator (필요시 추가)
                                 acm.getThreshold(),
                                 acm.getThreshold2(),
                                 acm.getAlertCondition().getDescription()
@@ -131,20 +145,24 @@ public class AlertService {
             if (cond == null)
                 throw new IllegalArgumentException("등록되지 않은 indicator: " + c.indicator());
 
+            Double threshold2 = null;
+            if (isBasePriceIndicator(c.indicator()) && request.stockCode() != null) {
+                threshold2 = fetchCurrentPriceFromRedis(request.stockCode());
+            }
+
             AlertConditionManager acm = new AlertConditionManager();
             acm.setAlert(alert);
             acm.setAlertCondition(cond);
             acm.setThreshold(c.threshold());
-            acm.setThreshold2(c.threshold2());
+            acm.setThreshold2(threshold2);
             alertConditionManagerRepository.save(acm);
 
             conditionResponses.add(
                     new AlertResponse.ConditionResponse(
                             cond.getId(),
                             cond.getIndicator(),
-                            null,
                             c.threshold(),
-                            c.threshold2(),
+                            threshold2,
                             cond.getDescription()
                     )
             );
@@ -154,12 +172,71 @@ public class AlertService {
                 .map(c -> String.format("- %s: %.2f ~ %.2f", c.indicator(), c.threshold(), c.threshold2()))
                 .collect(Collectors.joining("\n"));
 
-        // OpenAI 호출
-//        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+         //OpenAI 호출
+        String aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
 
         // ✅ 2. DB에도 aiFeedback 저장
-//        alert.setAiFeedback(aiFeedback);
+        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
+
+        List<String> stockCodes = List.of(
+                "005930",  // 삼성전자
+                "000660",  // SK하이닉스
+                "373220",  // LG에너지솔루션
+                "012450",  // 한화에어로스페이스
+                "005380",  // 현대차
+                "105560",  // KB금융
+                "035420",  // NAVER
+                "329180",  // HD현대중공업
+                "068270",  // 셀트리온
+                "034020",  // 두산에너빌리티
+                "000270",  // 기아
+                "055550",  // 신한지주
+                "035720",  // 카카오
+                "086790",  // 하나금융지주
+                "015760",  // 한국전력
+                "005490",  // POSCO홀딩스
+                "011200",  // HMM
+                "138040",  // 메리츠금융지주
+                "316140",  // 우리금융지주
+                "010130"   // 고려아연
+        );
+
+        if (request.stockCode() == null) {
+            alert.setIsConditionSearch(true);
+
+            Set<String> baseIndicators = Set.of(
+                    "PRICE_CHANGE_BASE_UP",
+                    "PRICE_CHANGE_BASE_DOWN",
+                    "PRICE_RATE_BASE_UP",
+                    "PRICE_RATE_BASE_DOWN"
+            );
+
+            boolean hasBaseIndicator = request.conditions().stream()
+                    .anyMatch(c -> baseIndicators.contains(c.indicator()));
+
+            for (String code : stockCodes) {
+                ConditionSearchResult conditionSearch = ConditionSearchResult.builder()
+                        .alert(alert)
+                        .stockCode(code)
+                        .isTriggered(false)
+                        .triggerDate(null)
+                        .build();
+                conditionSearchResultRepository.save(conditionSearch);
+
+                if (hasBaseIndicator) {
+                    Double currentPrice = fetchCurrentPriceFromRedis(code); // or external API
+                    ConditionBase conditionBase = ConditionBase.builder()
+                            .alertId(alert.getId())
+                            .stockCode(code)
+                            .baseValue(currentPrice)
+                            .build();
+                    conditionBaseRepository.save(conditionBase);
+                    log.info("📊 기준시점 저장: {} / baseValue={}", code, currentPrice);
+                }
+            }
+            log.info("🧩 조건 탐색용 알림 등록됨: alertId={}, {}개 종목 ConditionSearch 생성", alert.getId(), stockCodes.size());
+        }
 
         return new AlertResponse(
                 alert.getId(),
@@ -199,6 +276,8 @@ public class AlertService {
         alert.setTitle(request.title());
         alert.setStockCode(request.stockCode());
         alert.setIsActived(request.isActive());
+        alert.setIsTriggered(false);
+
         alertRepository.save(alert);
 
         alertConditionManagerRepository.deleteAllByAlertId(alertId);
@@ -223,7 +302,6 @@ public class AlertService {
             conditionResponses.add(new AlertResponse.ConditionResponse(
                     cond.getId(),
                     cond.getIndicator(),
-                    null,
                     c.threshold(),
                     c.threshold2(),
                     cond.getDescription()
@@ -236,14 +314,13 @@ public class AlertService {
 
         String aiFeedback;
         try {
-//            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
         } catch (Exception e) {
             aiFeedback = alert.getAiFeedback(); // 기존 유지
         }
 
-//        alert.setAiFeedback(aiFeedback);
+        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
-
 
         return new AlertResponse(
                 alert.getId(),
@@ -259,6 +336,7 @@ public class AlertService {
 
     @Transactional
     public void toggleAlert(Long userId, Long alertId, boolean isActived) {
+        log.info("");
         Alert alert = alertRepository.findById(alertId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
 
@@ -271,7 +349,7 @@ public class AlertService {
     }
 
     public List<AlertResponse> triggerAlert(Long userId) {
-        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggered(userId, true);
+        List<Alert> alertList = alertRepository.findByUserIdAndIsTriggeredAndIsActivedTrue(userId, true);
 
         if (alertList.isEmpty()) return List.of();
 
@@ -286,7 +364,6 @@ public class AlertService {
                         Collectors.mapping(acm -> new AlertResponse.ConditionResponse(
                                 acm.getAlertCondition().getId(),
                                 acm.getAlertCondition().getIndicator(),
-                                null,
                                 acm.getThreshold(),
                                 acm.getThreshold2(),
                                 acm.getAlertCondition().getDescription()
@@ -306,4 +383,78 @@ public class AlertService {
                 ))
                 .toList();
     }
+
+    private boolean isBasePriceIndicator(String indicator) {
+        return switch (indicator) {
+            case "PRICE_CHANGE_BASE_UP",
+                 "PRICE_CHANGE_BASE_DOWN",
+                 "PRICE_RATE_BASE_UP",
+                 "PRICE_RATE_BASE_DOWN",
+                 "TRAILING_STOP_PRICE",
+                 "TRAILING_STOP_PERCENT",
+                 "TRAILING_BUY_PRICE",
+                 "TRAILING_BUY_PERCENT"
+                 -> true;
+            default -> false;
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private Double fetchCurrentPriceFromRedis(String stockCode) {
+        try {
+            Map<String, Object> minute = (Map<String, Object>) redisTemplate.opsForValue().get("minute:" + stockCode);
+            if (minute == null || minute.get("price") == null) {
+                throw new IllegalStateException("Redis에서 현재가를 찾을 수 없습니다: " + stockCode);
+            }
+            return Double.parseDouble(minute.get("price").toString());
+        } catch (Exception e) {
+            throw new IllegalStateException("현재가 조회 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public AlertPriceDto togglePriceAlert(Long userId, String stockCode, boolean togglePrice) {
+        AlertPrice alertPrice = alertPriceRepository.findByUserIdAndStockCode(userId, stockCode)
+                .orElseGet(() -> {
+                    AlertPrice newSetting = new AlertPrice();
+                    newSetting.setUserId(userId);
+                    newSetting.setStockCode(stockCode);
+                    newSetting.setTogglePrice(true);
+                    return alertPriceRepository.save(newSetting);
+                });
+
+        alertPrice.setTogglePrice(togglePrice);
+        AlertPrice saved = alertPriceRepository.save(alertPrice);
+
+        log.info("🔁 [AlertPrice] userId={}, stockCode={}, newValue={}",
+                userId, stockCode, saved.isTogglePrice());
+
+        return AlertPriceDto.builder()
+                .id(saved.getId())
+                .userId(saved.getUserId())
+                .stockCode(saved.getStockCode())
+                .isPrice(saved.isTogglePrice())
+                .build();
+    }
+
+
+    @Transactional
+    public AlertPriceDto getOrCreatePriceAlert(Long userId, String stockCode) {
+        AlertPrice alertPrice = alertPriceRepository.findByUserIdAndStockCode(userId, stockCode)
+                .orElseGet(() -> {
+                    AlertPrice newSetting = new AlertPrice();
+                    newSetting.setUserId(userId);
+                    newSetting.setStockCode(stockCode);
+                    newSetting.setTogglePrice(true);
+                    return alertPriceRepository.save(newSetting);
+                });
+
+        return AlertPriceDto.builder()
+                .id(alertPrice.getId())
+                .userId(alertPrice.getUserId())
+                .stockCode(alertPrice.getStockCode())
+                .isPrice(alertPrice.isTogglePrice())
+                .build();
+    }
+
 }

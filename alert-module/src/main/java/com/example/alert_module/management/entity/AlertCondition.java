@@ -23,6 +23,9 @@ public class AlertCondition {
     @Column(name = "indicator", nullable = false)
     private String indicator;
 
+    @Column(name = "data_scope")
+    private String dataScope;
+
     @Lob
     @Column(name = "description")
     private String description;
