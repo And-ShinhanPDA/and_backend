@@ -20,12 +20,12 @@ public class NotificationService {
 
         Message fcmMessage = Message.builder()
                 .setToken(token)
-                .setNotification(
-                        Notification.builder()
-                                .setTitle(message.title())
-                                .setBody(message.body())
-                                .build()
-                )
+                .setNotification(Notification.builder()
+                        .setTitle(message.title())
+                        .setBody(message.body())
+                        .build())
+                .putData("title", message.title())
+                .putData("body", message.body())
                 .build();
 
         try {

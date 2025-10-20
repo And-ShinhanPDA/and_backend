@@ -24,7 +24,7 @@ public class AlertEventPublisher {
     private final CompanyRepository companyRepository;
 
 
-    public void publish(Alert alert, String alertType) {
+    public void publish(Alert alert, String alertType, String stockCode) {
 
         Map<String, List<AlertConditionDto>> grouped = alert.getConditionManagers().stream()
                 .collect(Collectors.groupingBy(
@@ -39,7 +39,7 @@ public class AlertEventPublisher {
                         )
                 ));
 
-        String companyName = companyRepository.findByStockCode(alert.getStockCode())
+        String companyName = companyRepository.findByStockCode(stockCode)
                 .map(c -> c.getName())
                 .orElse("알 수 없음");
 
@@ -48,7 +48,7 @@ public class AlertEventPublisher {
         var event = new AlertEvent(
                 alert.getId(),
                 alert.getUserId(),
-                alert.getStockCode(),
+                stockCode,
                 companyName,
                 alert.getTitle(),
                 categories,

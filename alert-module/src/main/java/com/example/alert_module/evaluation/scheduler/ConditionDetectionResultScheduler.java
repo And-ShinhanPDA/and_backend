@@ -26,7 +26,7 @@ public class ConditionDetectionResultScheduler {
     private final AlertEventPublisher eventPublisher;
 
     @Transactional
-//    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void runConditionDetectionResult() {
         log.info("🧭 [ConditionDetectionResultScheduler] 조건 탐색 스케줄 시작!");
 
@@ -43,6 +43,7 @@ public class ConditionDetectionResultScheduler {
             if (results.isEmpty()) continue;
 
             for (ConditionSearchResult result : results) {
+                log.info("🚨 [조건 평가 시작] stockCode={}", result.getStockCode());
                 boolean detected = alertEvaluationService.evaluateAlertForCondition(alert, result.getStockCode());
                 boolean before = Boolean.TRUE.equals(result.getIsTriggered());
                 boolean after = detected;
@@ -59,7 +60,7 @@ public class ConditionDetectionResultScheduler {
 
                 if (after) {
                     log.info("🚨 [조건 충족] alertId={}, stockCode={} → 트리거 ON", alert.getId(), result.getStockCode());
-                    eventPublisher.publish(alert, "CONDITION");
+                    eventPublisher.publish(alert, "CONDITION", result.getStockCode());
                 } else {
                     log.info("🕊️ [조건 해제] alertId={}, stockCode={} → 트리거 OFF", alert.getId(), result.getStockCode());
                 }
