@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 import java.util.Map;
 
+
 @Service
 public class OpenAIService {
 
@@ -20,8 +21,7 @@ public class OpenAIService {
     private String openAIApiKey;
 
     public String getAIFeedback(String indicatorsSummary) {
-        try {
-            String prompt = """
+        String prompt = """
             너는 주식 투자 보조 AI야.
             사용자가 주식 알림 조건을 설정하고 있어.
             아래 조건들은 각기 다른 시그널(가격, 거래량, 추세 등)을 의미해.
@@ -60,37 +60,47 @@ public class OpenAIService {
             조건:
             """ + indicatorsSummary;
 
+        // ✅ 요청 본문
+        Map<String, Object> requestBody = Map.of(
+                "model", "gpt-4o-mini",
+                "messages", List.of(
+                        Map.of("role", "system", "content", "You are a financial analyst who provides concise feedback on stock indicators."),
+                        Map.of("role", "user", "content", prompt)
+                )
+        );
 
-            Map<String, Object> requestBody = Map.of(
-                    "model", "gpt-4o-mini",
-                    "messages", List.of(
-                            Map.of("role", "system", "content", "You are a financial analyst who provides concise feedback on stock indicators."),
-                            Map.of("role", "user", "content", prompt)
-                    )
-            );
+        // ✅ 최대 2회 시도
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                Map<String, Object> response = webClient.post()
+                        .uri("/chat/completions")
+                        .header("Authorization", "Bearer " + openAIApiKey)
+                        .header("Content-Type", "application/json")
+                        .bodyValue(requestBody)
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        .block();
 
-            Map<String, Object> response = webClient.post()
-                    .uri("/chat/completions")
-                    .header("Authorization", "Bearer " + openAIApiKey)
-                    .header("Content-Type", "application/json")
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
+                if (response == null || !response.containsKey("choices"))
+                    throw new RuntimeException("AI 응답을 받을 수 없습니다.");
 
-            // ✅ 응답 파싱
-            if (response == null || !response.containsKey("choices"))
-                return "AI 응답을 받을 수 없습니다.";
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                if (choices.isEmpty()) throw new RuntimeException("AI 응답이 비어 있습니다.");
 
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-            if (choices.isEmpty()) return "AI 응답이 비어 있습니다.";
+                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                return message.get("content").toString().replaceAll("^\"|\"$", "");
 
-            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            return message.get("content").toString().replaceAll("^\"|\"$", "");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "AI 피드백 생성 중 오류 발생: " + e.getMessage();
+            } catch (Exception e) {
+                System.err.println("⚠️ AI 피드백 생성 실패 (시도 " + attempt + "): " + e.getMessage());
+                if (attempt == 2) {
+                    // 2회 모두 실패 시 null 반환
+                    return null;
+                }
+                try {
+                    Thread.sleep(1000); // 1초 대기 후 재시도
+                } catch (InterruptedException ignored) {}
+            }
         }
+        return null;
     }
 }

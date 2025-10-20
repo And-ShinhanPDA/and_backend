@@ -313,12 +313,12 @@ public class AlertService {
 
         String aiFeedback;
         try {
-//            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
+            aiFeedback = openAIService.getAIFeedback(indicatorsSummary);
         } catch (Exception e) {
             aiFeedback = alert.getAiFeedback(); // 기존 유지
         }
 
-//        alert.setAiFeedback(aiFeedback);
+        alert.setAiFeedback(aiFeedback);
         alertRepository.save(alert);
 
         return new AlertResponse(
