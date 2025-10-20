@@ -23,7 +23,7 @@ public class PushMessageFactory {
     public PushMessage createAlertCondition(String company, String alertTitle, String categorySentence) {
         return PushMessage.builder()
                 .title(String.format("📈[%s]%s조건 충족!", alertTitle, categorySentence))
-                .body(String.format("%s가 조건에 충족되었습니다.", company))
+                .body(String.format("%s(이)가 조건에 충족되었습니다.", company))
                 .build();
     }
 
