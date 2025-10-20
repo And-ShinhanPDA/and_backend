@@ -94,7 +94,6 @@ public class PushService {
 
         log.info("💰 [PushPrice] userId={}, title={}, body={}", userId, message.title(), message.body());
 
-        saveAlertHistory(alertId, message.body());
 
         // 실제 토큰 조회 로직 복원 가능
         // List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue(event.userId());
