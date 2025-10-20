@@ -1,11 +1,7 @@
 package com.example.alert_module.management.controller;
 
 import com.example.alert_module.common.dto.ApiResponse;
-import com.example.alert_module.management.dto.AlertCreateRequest;
-import com.example.alert_module.management.dto.AlertDetailResponse;
-import com.example.alert_module.management.dto.AlertResponse;
-import com.example.alert_module.management.dto.AlertUpdateRequest;
-import com.example.alert_module.management.dto.ToggleRequest;
+import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.service.AlertService;
 import com.example.user_module.common.security.AuthUser;
 import java.util.List;
@@ -90,22 +86,23 @@ public class AlertController {
         return ResponseEntity.ok(ApiResponse.success("현재 조건을 만족 중인 알림들이 조회되었습니다.", response));
     }
 
-    @PatchMapping("/{alertId}/price")
-    public ResponseEntity<ApiResponse<String>> togglePriceAlert(
-            @PathVariable Long alertId,
+    @PatchMapping("/price/{stockCode}")
+    public ResponseEntity<ApiResponse<AlertPriceDto>> togglePriceAlert(
+            @PathVariable String stockCode,
+            @RequestBody TogglePriceRequest request,
             @AuthUser Long userId
     ) {
-        alertService.togglePriceAlert(userId, alertId);
-        return ResponseEntity.ok(ApiResponse.success("시가/종가 알림 설정이 변경되었습니다."));
+        AlertPriceDto dto = alertService.togglePriceAlert(userId, stockCode, request.isTogglePrice());
+        return ResponseEntity.ok(ApiResponse.success("시가/종가 알림 설정이 변경되었습니다.", dto));
     }
 
-    @GetMapping("/{alertId}/price")
-    public ResponseEntity<ApiResponse<Boolean>> getIsPriceAlert(
-            @PathVariable Long alertId,
-            @AuthUser Long userId
+    @GetMapping("/price/{stockCode}")
+    public ResponseEntity<ApiResponse<?>> getOrCreatePriceAlert(
+            @AuthUser Long userId,
+            @PathVariable String stockCode
     ) {
-        boolean isPrice = alertService.getIsPriceAlert(userId, alertId);
-        return ResponseEntity.ok(ApiResponse.success(isPrice));
+
+        return ResponseEntity.ok(ApiResponse.success("조회 성공", alertService.getOrCreatePriceAlert(userId, stockCode)));
     }
 
 

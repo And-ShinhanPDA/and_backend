@@ -16,19 +16,11 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 @Configuration
 @EnableRabbit
 public class RabbitMQConfig {
-    
-//    @Bean
-//    public CachingConnectionFactory connectionFactory() {
-//        CachingConnectionFactory factory = new CachingConnectionFactory();
-//        factory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
-//        factory.setPublisherReturns(true);
-//        return factory;
-//    }
 
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // ✅ LocalDateTime 지원
+        mapper.registerModule(new JavaTimeModule());
         mapper.findAndRegisterModules();
         return new Jackson2JsonMessageConverter(mapper);
     }
@@ -45,7 +37,7 @@ public class RabbitMQConfig {
     @Bean
     public AmqpAdmin amqpAdmin(CachingConnectionFactory factory) {
         RabbitAdmin admin = new RabbitAdmin(factory);
-        admin.setAutoStartup(true); // 컨텍스트 초기화 시 큐 자동 등록
+        admin.setAutoStartup(true);
         return admin;
     }
 
@@ -72,10 +64,19 @@ public class RabbitMQConfig {
     // 📦 ALERT 모듈 (테스트용 Exchange / Queue / RoutingKey)
     // ======================================================
     public static final String ALERT_EXCHANGE = "alert.exchange";
-    public static final String ALERT_QUEUE = "alert.queue";
-    public static final String ALERT_ROUTING_KEY = "alert.key";
 
+    // ======================================================
+    // 📦 기업별 / 조건검색 / 시가·종가 큐 정의
+    // ======================================================
+    public static final String ALERT_COMPANY_QUEUE = "alert.company.queue";
+    public static final String ALERT_CONDITION_QUEUE = "alert.condition.queue";
     public static final String ALERT_TEST_QUEUE = "alert.test.queue";
+
+    // ======================================================
+    // 🧭 RoutingKey 정의
+    // ======================================================
+    public static final String ALERT_COMPANY_ROUTING_KEY = "alert.company";
+    public static final String ALERT_CONDITION_ROUTING_KEY = "alert.condition";
     public static final String ALERT_TEST_ROUTING_KEY = "alert.test.key";
 
     // 2) 테스트용 큐/바인딩 추가 (같은 exchange 재사용)
@@ -97,14 +98,24 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue alertQueue() {
-        return new Queue(ALERT_QUEUE, true);
+    public Queue alertCompanyQueue() {
+        return new Queue(ALERT_COMPANY_QUEUE, true);
     }
 
     @Bean
-    public Binding alertBinding(Queue alertQueue, DirectExchange alertExchange) {
-        return BindingBuilder.bind(alertQueue)
-                .to(alertExchange)
-                .with(ALERT_ROUTING_KEY);
+    public Queue alertConditionQueue() {
+        return new Queue(ALERT_CONDITION_QUEUE, true);
     }
+
+
+    @Bean
+    public Binding companyBinding(Queue alertCompanyQueue, DirectExchange alertExchange) {
+        return BindingBuilder.bind(alertCompanyQueue).to(alertExchange).with(ALERT_COMPANY_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding conditionBinding(Queue alertConditionQueue, DirectExchange alertExchange) {
+        return BindingBuilder.bind(alertConditionQueue).to(alertExchange).with(ALERT_CONDITION_ROUTING_KEY);
+    }
+
 }

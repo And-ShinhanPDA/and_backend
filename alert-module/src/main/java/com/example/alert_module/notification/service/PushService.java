@@ -46,9 +46,34 @@ public class PushService {
                 categorySentence
         );
 
-        log.info("🔔 [Push] userId={}, title={}, body={}", event.userId(), message.title(), message.body());
+        log.info("🔔 [PushAlert] userId={}, title={}, body={}", event.userId(), message.title(), message.body());
 
-        saveAlertHistory(event, message.body());
+        saveAlertHistory(event.alertId(), message.body());
+
+//        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((event.userId()));ㅔ
+//        for (FcmToken token : tokens) {
+//            notificationService.send(token.getFcmToken(), message);
+//        }
+        notificationService.send(token, message);
+
+    }
+
+    public void sendCondition(AlertEvent event) {
+        String categorySentence = makeNaturalSentence(event.categories());
+
+        //String token = fcmToken.getFcmToken();
+        String token = "d4azkv8-ckTGqOUtdpLsDr:APA91bEHCOEZ5xtjUCn_trQd7-SayfcoJ7xFRKR4bJNmGtPUNk9oQboctzZA4qbMer7Yg84bqRuLzzt3JIkByzoF1BEcX_Sht0D2JDxjNiKVHphVxwD3tiQ";
+
+
+        PushMessage message = messageFactory.createAlertCondition(
+                event.companyName(),
+                event.title(),
+                categorySentence
+        );
+
+        log.info("🔔 [PushCondition] userId={}, title={}, body={}", event.userId(), message.title(), message.body());
+
+        saveAlertHistory(event.alertId(), message.body());
 
 //        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((event.userId()));
 //        for (FcmToken token : tokens) {
@@ -58,21 +83,36 @@ public class PushService {
 
     }
 
+    public void sendPrice(Long userId, Long alertId, String companyName, Double price, String priceType) {
+        String token = "d4azkv8-ckTGqOUtdpLsDr:APA91bEHCOEZ5xtjUCn_trQd7-SayfcoJ7xFRKR4bJNmGtPUNk9oQboctzZA4qbMer7Yg84bqRuLzzt3JIkByzoF1BEcX_Sht0D2JDxjNiKVHphVxwD3tiQ";
 
-    private void saveAlertHistory(AlertEvent event, String body) {
+        PushMessage message = messageFactory.createAlertPrice(
+                companyName,
+                price,
+                priceType // "시가" or "종가"
+        );
+
+        log.info("💰 [PushPrice] userId={}, title={}, body={}", userId, message.title(), message.body());
+
+        saveAlertHistory(alertId, message.body());
+
+        // 실제 토큰 조회 로직 복원 가능
+        // List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue(event.userId());
+        // for (FcmToken token : tokens) notificationService.send(token.getFcmToken(), message);
+
+        notificationService.send(token, message);
+    }
+
+
+    private void saveAlertHistory(Long alertId, String body) {
         try {
-            Alert alert = Alert.builder()
-                    .id(event.alertId())
-                    .build();
-
+            Alert alert = Alert.builder().id(alertId).build();
             AlertHistory history = AlertHistory.builder()
                     .alert(alert)
                     .indicatorSnapshot(body)
                     .build();
-
+            log.info("🧾 [AlertHistory 저장 완료] alertId={}, snapshot={}", alert.getId(), body);
             alertHistoryRepository.save(history);
-
-            log.info("🧾 [AlertHistory 저장 완료] alertId={}, snapshot={}", event.alertId(), body);
         } catch (Exception e) {
             log.error("❌ AlertHistory 저장 실패: {}", e.getMessage());
         }

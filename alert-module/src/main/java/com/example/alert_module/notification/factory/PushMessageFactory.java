@@ -20,17 +20,20 @@ public class PushMessageFactory {
         }
     }
 
-    public PushMessage createAlertCondition(String company, String alertTitle) {
+    public PushMessage createAlertCondition(String company, String alertTitle, String categorySentence) {
         return PushMessage.builder()
-                .title(String.format("📈%s 조건 충족!", alertTitle))
+                .title(String.format("📈[%s]%s조건 충족!", alertTitle, categorySentence))
                 .body(String.format("%s가 조건에 충족되었습니다.", company))
                 .build();
     }
 
-    public PushMessage createAlertPrice(String company, String price) {
+    public PushMessage createAlertPrice(String company, double price, String priceType) {
+        String title = String.format("[%s]%s 알림", company, priceType);
+        String body = String.format("%s의 %s는 %,.0f원입니다.", company, priceType, price);
+
         return PushMessage.builder()
-                .title(String.format("[%s] 시가/종가 알림", company))
-                .body(String.format("시작가/종가 %s원입니다.", price))
+                .title(title)
+                .body(body)
                 .build();
     }
 

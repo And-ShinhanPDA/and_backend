@@ -26,7 +26,7 @@ public class ConditionDetectionResultScheduler {
     private final AlertEventPublisher eventPublisher;
 
     @Transactional
-    @Scheduled(cron = "0 * * * * *")
+//    @Scheduled(cron = "0 * * * * *")
     public void runConditionDetectionResult() {
         log.info("🧭 [ConditionDetectionResultScheduler] 조건 탐색 스케줄 시작!");
 
@@ -59,7 +59,7 @@ public class ConditionDetectionResultScheduler {
 
                 if (after) {
                     log.info("🚨 [조건 충족] alertId={}, stockCode={} → 트리거 ON", alert.getId(), result.getStockCode());
-                    eventPublisher.publish(alert);
+                    eventPublisher.publish(alert, "CONDITION");
                 } else {
                     log.info("🕊️ [조건 해제] alertId={}, stockCode={} → 트리거 OFF", alert.getId(), result.getStockCode());
                 }
