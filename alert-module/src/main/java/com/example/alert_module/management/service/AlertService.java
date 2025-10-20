@@ -11,7 +11,7 @@ import com.example.alert_module.evaluation.repository.ConditionSearchResultRepos
 import com.example.alert_module.management.dto.*;
 import com.example.alert_module.management.repository.*;
 import com.example.alert_module.management.entity.*;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +33,7 @@ public class AlertService {
 //    private final ConditionSearchRepository conditionSearchRepository;
     private final ConditionSearchResultRepository conditionSearchResultRepository;
     private final ConditionBaseRepository conditionBaseRepository;
+    private final AlertPriceRepository alertPriceRepository;
 
     @Transactional
     public AlertDetailResponse getAlertDetail(Long userId, Long alertId) {
@@ -412,31 +413,48 @@ public class AlertService {
     }
 
     @Transactional
-    public void togglePriceAlert(Long userId, Long alertId) {
-        Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
+    public AlertPriceDto togglePriceAlert(Long userId, String stockCode, boolean togglePrice) {
+        AlertPrice alertPrice = alertPriceRepository.findByUserIdAndStockCode(userId, stockCode)
+                .orElseGet(() -> {
+                    AlertPrice newSetting = new AlertPrice();
+                    newSetting.setUserId(userId);
+                    newSetting.setStockCode(stockCode);
+                    newSetting.setTogglePrice(true);
+                    return alertPriceRepository.save(newSetting);
+                });
 
-        if (!alert.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
-        }
+        alertPrice.setTogglePrice(togglePrice);
+        AlertPrice saved = alertPriceRepository.save(alertPrice);
 
-        alert.setIsPrice(!alert.getIsPrice()); // 토글
-        alertRepository.save(alert);
+        log.info("🔁 [AlertPrice] userId={}, stockCode={}, newValue={}",
+                userId, stockCode, saved.isTogglePrice());
 
-        log.info("🔁 [Alert] isPrice 변경: alertId={}, userId={}, newValue={}",
-                alertId, userId, alert.getIsPrice());
+        return AlertPriceDto.builder()
+                .id(saved.getId())
+                .userId(saved.getUserId())
+                .stockCode(saved.getStockCode())
+                .isPrice(saved.isTogglePrice())
+                .build();
     }
 
+
     @Transactional
-    public boolean getIsPriceAlert(Long userId, Long alertId) {
-        Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ALERT_NOT_FOUND));
+    public AlertPriceDto getOrCreatePriceAlert(Long userId, String stockCode) {
+        AlertPrice alertPrice = alertPriceRepository.findByUserIdAndStockCode(userId, stockCode)
+                .orElseGet(() -> {
+                    AlertPrice newSetting = new AlertPrice();
+                    newSetting.setUserId(userId);
+                    newSetting.setStockCode(stockCode);
+                    newSetting.setTogglePrice(true);
+                    return alertPriceRepository.save(newSetting);
+                });
 
-        if (!alert.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
-        }
-
-        return alert.getIsPrice(); // 또는 alert.isPrice()
+        return AlertPriceDto.builder()
+                .id(alertPrice.getId())
+                .userId(alertPrice.getUserId())
+                .stockCode(alertPrice.getStockCode())
+                .isPrice(alertPrice.isTogglePrice())
+                .build();
     }
 
 }
