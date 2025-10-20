@@ -23,7 +23,9 @@ public class AlertEventPublisher {
     private final RabbitTemplate rabbitTemplate;
     private final CompanyRepository companyRepository;
 
-    public void publish(Alert alert) {
+
+    public void publish(Alert alert, String alertType) {
+
         Map<String, List<AlertConditionDto>> grouped = alert.getConditionManagers().stream()
                 .collect(Collectors.groupingBy(
                         m -> m.getAlertCondition().getCategory(),
@@ -53,21 +55,25 @@ public class AlertEventPublisher {
                 alert.getIsTriggered()
         );
 
+        String routingKey = switch (alertType.toUpperCase()) {
+            case "CONDITION" -> RabbitMQConfig.ALERT_CONDITION_ROUTING_KEY;
+            case "COMPANY" -> RabbitMQConfig.ALERT_COMPANY_ROUTING_KEY;
+            default -> RabbitMQConfig.ALERT_COMPANY_ROUTING_KEY;
+        };
+
         log.info("""
-        📤 [Publish 시도]
+        📤 [RabbitMQ Publish]
         Exchange  = {}
         RoutingKey= {}
-        Connection= {}
         Event     = {}
         """,
                 RabbitMQConfig.ALERT_EXCHANGE,
-                RabbitMQConfig.ALERT_ROUTING_KEY,
-                rabbitTemplate.getConnectionFactory(),
+                routingKey,
                 event);
 
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.ALERT_EXCHANGE,
-                RabbitMQConfig.ALERT_ROUTING_KEY,
+                routingKey,
                 event
         );
     }
