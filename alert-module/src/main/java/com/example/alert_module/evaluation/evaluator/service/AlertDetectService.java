@@ -45,14 +45,14 @@ public class AlertDetectService {
             if (alert.getIsTriggered() && !isTriggeredNow) {
                 log.info("조건 벗어남.");
                 alert.setIsTriggered(false);
-                eventPublisher.publish(alert, "COMPANY");
+                eventPublisher.publish(alert, "COMPANY", stockCode);
             } else if (!alert.getIsTriggered() && isTriggeredNow) {
                 alert.setIsTriggered(true);
                 log.info("조건 만족함.");
                 log.info("🚀 [{}] alertId={} trigger 상태 변경 ({} → true)",
                         stockCode, alert.getId(),
                         alert.getIsTriggered() ? "false" : "true");
-                eventPublisher.publish(alert, "COMPANY");
+                eventPublisher.publish(alert, "COMPANY", stockCode);
             }
         }
     }

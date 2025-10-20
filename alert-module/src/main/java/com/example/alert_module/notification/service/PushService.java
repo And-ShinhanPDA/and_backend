@@ -36,7 +36,7 @@ public class PushService {
         String categorySentence = makeNaturalSentence(event.categories());
 
         //String token = fcmToken.getFcmToken();
-        String token = "d4azkv8-ckTGqOUtdpLsDr:APA91bEHCOEZ5xtjUCn_trQd7-SayfcoJ7xFRKR4bJNmGtPUNk9oQboctzZA4qbMer7Yg84bqRuLzzt3JIkByzoF1BEcX_Sht0D2JDxjNiKVHphVxwD3tiQ";
+        String token = "cnWxc6DsHEo4vS5RvIJgPa:APA91bEGZj8GKuZIEMaBMsw-B5KoNi_2x9a6mRe6uoKhZwlFM_D9CdbTaWhkmwSZcRWzMNTib4HJxFxyYQqdJorn9VEuGPaX96Iuo861_vKXlPwOJAtf_7A";
 
 
         PushMessage message = messageFactory.createAlertCompany(
@@ -62,7 +62,7 @@ public class PushService {
         String categorySentence = makeNaturalSentence(event.categories());
 
         //String token = fcmToken.getFcmToken();
-        String token = "d4azkv8-ckTGqOUtdpLsDr:APA91bEHCOEZ5xtjUCn_trQd7-SayfcoJ7xFRKR4bJNmGtPUNk9oQboctzZA4qbMer7Yg84bqRuLzzt3JIkByzoF1BEcX_Sht0D2JDxjNiKVHphVxwD3tiQ";
+        String token = "cnWxc6DsHEo4vS5RvIJgPa:APA91bEGZj8GKuZIEMaBMsw-B5KoNi_2x9a6mRe6uoKhZwlFM_D9CdbTaWhkmwSZcRWzMNTib4HJxFxyYQqdJorn9VEuGPaX96Iuo861_vKXlPwOJAtf_7A";
 
 
         PushMessage message = messageFactory.createAlertCondition(
@@ -84,7 +84,7 @@ public class PushService {
     }
 
     public void sendPrice(Long userId, Long alertId, String companyName, Double price, String priceType) {
-        String token = "d4azkv8-ckTGqOUtdpLsDr:APA91bEHCOEZ5xtjUCn_trQd7-SayfcoJ7xFRKR4bJNmGtPUNk9oQboctzZA4qbMer7Yg84bqRuLzzt3JIkByzoF1BEcX_Sht0D2JDxjNiKVHphVxwD3tiQ";
+        String token = "cnWxc6DsHEo4vS5RvIJgPa:APA91bEGZj8GKuZIEMaBMsw-B5KoNi_2x9a6mRe6uoKhZwlFM_D9CdbTaWhkmwSZcRWzMNTib4HJxFxyYQqdJorn9VEuGPaX96Iuo861_vKXlPwOJAtf_7A";
 
         PushMessage message = messageFactory.createAlertPrice(
                 companyName,
@@ -94,7 +94,6 @@ public class PushService {
 
         log.info("💰 [PushPrice] userId={}, title={}, body={}", userId, message.title(), message.body());
 
-        saveAlertHistory(alertId, message.body());
 
         // 실제 토큰 조회 로직 복원 가능
         // List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue(event.userId());
