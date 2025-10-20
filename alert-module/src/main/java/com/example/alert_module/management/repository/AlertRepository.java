@@ -52,6 +52,7 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
             @Param("end") LocalDateTime end
     );
 
+
     @Query("""
     SELECT h
     FROM AlertHistory h
@@ -68,4 +69,5 @@ public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long
 
 
     Long countByAlertIdIn(List<Long> alertIds);
+
 }

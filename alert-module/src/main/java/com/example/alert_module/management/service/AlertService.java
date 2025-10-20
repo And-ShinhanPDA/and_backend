@@ -68,7 +68,6 @@ public class AlertService {
                 alert.getCreatedAt(),
                 alert.getUpdatedAt(),
                 conditionResponses,
-                alert.getIsPrice(),
                 alert.getAiFeedback()
         );
     }
@@ -129,7 +128,6 @@ public class AlertService {
         alert.setStockCode(request.stockCode());
         alert.setIsActived(request.isActive());
         alert.setIsTriggered(false);
-        alert.setIsConditionSearch(false);
         alertRepository.save(alert);
 
         Set<String> indicators = new HashSet<>();
@@ -203,8 +201,6 @@ public class AlertService {
         );
 
         if (request.stockCode() == null) {
-            alert.setIsConditionSearch(true);
-
             Set<String> baseIndicators = Set.of(
                     "PRICE_CHANGE_BASE_UP",
                     "PRICE_CHANGE_BASE_DOWN",
