@@ -1,73 +1,59 @@
-package com.example.alert_module.history.repository;
+package com.example.alert_module.management.repository;
 
-import com.example.alert_module.history.entity.AlertHistory;
+
+import com.example.alert_module.management.dto.GetCompanyRes;
+import com.example.alert_module.management.entity.Alert;
+
+import java.util.List;
+
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+public interface AlertRepository extends JpaRepository<Alert, Long> {
+    List<Alert> findByUserId(Long userId);
 
-@Repository
-public interface AlertHistoryRepository extends JpaRepository<AlertHistory, Long> {
+    List<Alert> findByUserIdAndStockCode(Long userId, String stockCode);
+
+    List<Alert> findByUserIdAndIsActived(Long userId, Boolean isActived);
+
+    List<Alert> findByUserIdAndStockCodeAndIsActived(Long userId, String stockCode, boolean isActived);
+
+    @Query("""
+    SELECT new com.example.alert_module.management.dto.GetCompanyRes(
+        a.stockCode,
+        c.name,
+        SUM(CASE WHEN a.isActived = true THEN 1 ELSE 0 END),
+        CASE WHEN SUM(CASE WHEN a.isActived = true THEN 1 ELSE 0 END) > 0 THEN true ELSE false END
+    )
+    FROM Alert a
+    JOIN Company c ON a.stockCode = c.stockCode
+    WHERE a.userId = :userId
+    GROUP BY a.stockCode, c.name
+""")
+    List<GetCompanyRes> findCompanyAlertCountsByUserId(@Param("userId") Long userId);
+
+
+    @Query("SELECT a.id FROM Alert a WHERE a.userId = :userId AND a.stockCode = :stockCode")
+    List<Long> findAlertIdsByUserIdAndStockCode(@Param("userId") Long userId, @Param("stockCode") String stockCode);
+
     @Modifying
-    @Query("DELETE FROM AlertHistory ah WHERE ah.alert.id IN :alertIds")
+    @Query("DELETE FROM Alert a WHERE a.id IN :alertIds")
     void deleteByAlertIds(@Param("alertIds") List<Long> alertIds);
 
-    List<AlertHistory> findAllByAlert_UserIdAndCreatedAtBetween(
-            Long userId,
-            LocalDateTime start,
-            LocalDateTime end
-    );
+    @Modifying
+    @Query("UPDATE Alert a SET a.isActived = :isActived " +
+            "WHERE a.userId = :userId AND a.stockCode = :stockCode")
+    void updateIsActivedByUserIdAndStockCode(@Param("userId") Long userId,
+                                             @Param("stockCode") String stockCode,
+                                             @Param("isActived") boolean isActived);
 
-    @Query("""
-        SELECT h
-        FROM AlertHistory h
-        JOIN h.alert a
-        WHERE a.userId = :userId
-          AND a.stockCode = :stockCode
-        ORDER BY h.createdAt DESC
-    """)
-    List<AlertHistory> findAllByUserIdAndStockCode(@Param("userId") Long userId,
-
-                                                   @Param("stockCode") String stockCode);
-
-    List<AlertHistory> findAllByAlert_UserId(@Param("userId") Long userId);
-
-    @Query("""
-    SELECT h
-    FROM AlertHistory h
-    JOIN h.alert a
-    WHERE a.userId = :userId
-      AND a.stockCode = :stockCode
-      AND h.createdAt BETWEEN :start AND :end
-    ORDER BY h.createdAt DESC
-""")
-    List<AlertHistory> findAllByUserIdAndStockCodeAndCreatedAtBetween(
-            @Param("userId") Long userId,
-            @Param("stockCode") String stockCode,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
-    );
+    List<Alert> findByUserIdAndIsTriggeredAndIsActivedTrue(Long userId, Boolean isTriggered);
 
 
-    @Query("""
-    SELECT h
-    FROM AlertHistory h
-    JOIN h.alert a
-    WHERE a.userId = :userId
-      AND h.createdAt BETWEEN :start AND :end
-    ORDER BY h.createdAt DESC
-""")
-    List<AlertHistory> findAllByUserIdAndCreatedAtBetween(
-            @Param("userId") Long userId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
-    );
+    List<Alert> findByIsActivedAndStockCode(boolean isActived, String stockCode);
 
-
-    Long countByAlertIdIn(List<Long> alertIds);
-
+    @Query("SELECT a FROM Alert a WHERE a.stockCode IS NULL AND a.isActived = true")
+    List<Alert> findConditionAlerts();
 }
