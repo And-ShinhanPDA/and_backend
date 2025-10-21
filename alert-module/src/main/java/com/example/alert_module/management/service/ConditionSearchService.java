@@ -174,7 +174,8 @@ public class ConditionSearchService {
             int triggeredCount = triggeredResults.size();
 
             String conditionName = alert.getTitle();
-            responseList.add(new ConditionTriggeredRes(conditionName, (long) triggeredCount));
+            if (triggeredCount != 0)
+                responseList.add(new ConditionTriggeredRes(conditionName, (long) triggeredCount));
 
             log.info("🔔 alertId={}, title={}, triggered 기업 수={}",
                     alert.getId(), alert.getTitle(), triggeredCount);
