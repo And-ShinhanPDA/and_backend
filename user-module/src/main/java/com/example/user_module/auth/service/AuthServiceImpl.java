@@ -46,12 +46,6 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         UserEntity saved = userRepository.save(user);
-        fcmRepository.save(FcmToken.builder()
-                .user(user)
-                .deviceId(signUpReq.deviceId())
-                .fcmToken(signUpReq.fcmToken())
-                .actived(false)
-                .build());
 
         return new AuthRes.signUpRes(saved.getId(), saved.getEmail(), saved.getName());
     }
@@ -75,8 +69,20 @@ public class AuthServiceImpl implements AuthService {
                 LocalDateTime.now().plusDays(7)
         );
 
-        fcmRepository.activateToken(user.getId(), loginReq.deviceId());
-        log.info("🔔 [fcmrepository activate] userid={}, deviceid={}", user.getId(), loginReq.deviceId());
+        // ✅ 이미 등록된 FCM 토큰 있는지 확인
+        boolean exists = fcmRepository.findByUserIdAndDeviceId(user.getId(), loginReq.deviceId()).isPresent();
+
+        if (!exists) {
+            fcmRepository.save(FcmToken.builder()
+                    .user(user)
+                    .deviceId(loginReq.deviceId())
+                    .fcmToken(loginReq.fcmToken())
+                    .actived(true)
+                    .build());
+            log.info("✅ FCM 토큰 신규 등록: userId={}, deviceId={}", user.getId(), loginReq.deviceId());
+        } else {
+            log.info("⚠️ 이미 존재하는 FCM 토큰, 저장 스킵: userId={}, deviceId={}", user.getId(), loginReq.deviceId());
+        }
 
         return new AuthRes.loginRes(
                 user.getId(),
@@ -87,4 +93,5 @@ public class AuthServiceImpl implements AuthService {
                 refresh.getId()
         );
     }
+
 }

@@ -65,7 +65,7 @@ class JwtAuthFlowIntegrationTest {
     @DisplayName("JWT 인증 전체 흐름 (로그인 → 만료 → 재발급)")
     void jwtAuthAndRefreshFlowWithCookie() throws Exception {
         // 1️⃣ 로그인
-        var loginReq = new AuthReq.loginReq(user.getEmail(), "1234", "123");
+        var loginReq = new AuthReq.loginReq(user.getEmail(), "1234","1","1");
 
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
