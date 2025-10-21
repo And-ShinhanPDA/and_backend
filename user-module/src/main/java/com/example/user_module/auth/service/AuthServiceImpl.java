@@ -12,11 +12,14 @@ import com.example.user_module.common.security.jwt.service.RefreshTokenService;
 import com.example.user_module.fcm.entity.FcmToken;
 import com.example.user_module.fcm.repository.FcmRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -54,6 +57,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthRes.loginRes login(AuthReq.loginReq loginReq) {
         UserEntity user = userRepository.findByEmail(loginReq.email())
                 .orElseThrow(() -> new AuthException(ResponseCode.LOGIN_FAIL));
@@ -72,6 +76,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         fcmRepository.activateToken(user.getId(), loginReq.deviceId());
+        log.info("🔔 [fcmrepository activate] userid={}, deviceid={}", user.getId(), loginReq.deviceId());
 
         return new AuthRes.loginRes(
                 user.getId(),
