@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FcmRepository extends JpaRepository<FcmToken, Long> {
     List<FcmToken> findByUserIdAndActivedTrue(Long userId);
@@ -31,4 +32,6 @@ public interface FcmRepository extends JpaRepository<FcmToken, Long> {
           AND f.deviceId = :deviceId
     """)
     void activateToken(Long userId, String deviceId);
+
+    Optional<FcmToken> findByUserIdAndDeviceId(Long userId, String deviceId);
 }
