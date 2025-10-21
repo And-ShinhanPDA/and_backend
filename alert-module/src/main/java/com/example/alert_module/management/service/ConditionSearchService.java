@@ -34,8 +34,8 @@ public class ConditionSearchService {
             Map.entry("현재가", "minute"),
             Map.entry("거래량", "minute"),
             Map.entry("시가", "daily"),
-            Map.entry("52주 최저가", "minute"),
-            Map.entry("52주 최고가", "minute"),
+            Map.entry("52주 최저가", "daily"),
+            Map.entry("52주 최고가", "daily"),
             Map.entry("sma5", "daily"),
             Map.entry("sma10", "daily"),
             Map.entry("sma20", "daily"),
@@ -56,7 +56,7 @@ public class ConditionSearchService {
             Map.entry("52주 최고가", List.of("highPrice")),
             Map.entry("sma5", List.of("sma5")),
             Map.entry("sma10", List.of("sma10")),
-            Map.entry("sma20", List.of("sma20", "avgVol20")),
+            Map.entry("sma20", List.of("sma20")),
             Map.entry("sma30", List.of("sma30")),
             Map.entry("sma50", List.of("sma50")),
             Map.entry("sma100", List.of("sma100")),
@@ -125,15 +125,25 @@ public class ConditionSearchService {
 
         log.info("🧭 [ConditionGroup] alertId={} → {}", alertId, activeGroups);
 
-        List<ConditionSearchResponse> responses = triggeredResults.stream()
+        Set<String> commonFields = activeGroups.stream()
+                .flatMap(group -> GROUP_TO_FIELDS.getOrDefault(group, List.of("price")).stream())
+                .collect(Collectors.toSet());
+
+        log.info("📋 [CommonFields] {}", commonFields);
+
+        return triggeredResults.stream()
                 .map(result -> {
                     String stockCode = result.getStockCode();
-                    Map<String, Object> valueMap = getRedisValuesForGroups(stockCode, activeGroups);
-                    return new ConditionSearchResponse(stockCode, result.getTriggerDate(), valueMap);
+                    Map<String, Object> redisValues = getRedisValuesForGroups(stockCode, activeGroups);
+
+                    Map<String, Object> normalized = new java.util.LinkedHashMap<>();
+                    for (String field : commonFields) {
+                        normalized.put(field, redisValues.getOrDefault(field, null));
+                    }
+
+                    return new ConditionSearchResponse(stockCode, result.getTriggerDate(), normalized);
                 })
                 .toList();
-
-        return responses;
     }
 
     @SuppressWarnings("unchecked")
@@ -174,7 +184,8 @@ public class ConditionSearchService {
             int triggeredCount = triggeredResults.size();
 
             String conditionName = alert.getTitle();
-            responseList.add(new ConditionTriggeredRes(conditionName, (long) triggeredCount));
+            if (triggeredCount != 0)
+                responseList.add(new ConditionTriggeredRes(conditionName, (long) triggeredCount));
 
             log.info("🔔 alertId={}, title={}, triggered 기업 수={}",
                     alert.getId(), alert.getTitle(), triggeredCount);
