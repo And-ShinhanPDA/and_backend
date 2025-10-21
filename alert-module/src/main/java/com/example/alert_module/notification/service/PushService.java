@@ -46,10 +46,12 @@ public class PushService {
 
         saveAlertHistory(event.alertId(), message.body());
 
-        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((event.userId()));
-        for (FcmToken token : tokens) {
-            notificationService.send(token.getFcmToken(), message);
-        }
+        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue(event.userId());
+        List<String> tokenList = tokens.stream()
+                .map(FcmToken::getFcmToken)
+                .toList();
+
+        notificationService.sendAll(tokenList, message);
 
     }
 
@@ -69,10 +71,12 @@ public class PushService {
 
         saveAlertHistory(event.alertId(), message.body());
 
-        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((event.userId()));
-        for (FcmToken token : tokens) {
-            notificationService.send(token.getFcmToken(), message);
-        }
+        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue(event.userId());
+        List<String> tokenList = tokens.stream()
+                .map(FcmToken::getFcmToken)
+                .toList();
+
+        notificationService.sendAll(tokenList, message);
 //        notificationService.send(token, message);
 
     }
