@@ -59,7 +59,6 @@ public class PriceScheduler {
 
                 pushService.sendPrice(
                         userId,
-                        null,
                         companyName,
                         price,
                         priceTypeName

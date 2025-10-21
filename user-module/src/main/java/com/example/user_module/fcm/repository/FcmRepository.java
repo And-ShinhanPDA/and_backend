@@ -13,7 +13,7 @@ public interface FcmRepository extends JpaRepository<FcmToken, Long> {
 
 
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE FcmToken f
         SET f.actived = false
@@ -23,7 +23,7 @@ public interface FcmRepository extends JpaRepository<FcmToken, Long> {
     void deactivateToken(Long userId, String deviceId);
 
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE FcmToken f
         SET f.actived = true
