@@ -7,6 +7,7 @@ import com.example.user_module.common.security.AuthUser;
 import com.example.user_module.fcm.entity.FcmToken;
 import com.example.user_module.fcm.repository.FcmRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.el.util.MessageFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
@@ -31,6 +33,7 @@ public class NotificationController {
 
         List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((userId));
         for (FcmToken token : tokens) {
+            log.info("🔔 [token 맞는지 확인 ] token={}, userId={}", token.getFcmToken(), userId);
             notificationService.send(token.getFcmToken(), pushMessage);
         }
 
