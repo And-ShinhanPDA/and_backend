@@ -6,10 +6,10 @@ import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 @Slf4j
@@ -22,19 +22,28 @@ public class FcmInitializer {
     @PostConstruct
     public void initialize() {
         try {
-            ClassPathResource resource = new ClassPathResource(firebaseConfigPath);
-            try (InputStream stream = resource.getInputStream()) {
+            File file = new File(firebaseConfigPath);
+
+            if (!file.exists()) {
+                log.error("❌ Firebase config file not found at path: {}", file.getAbsolutePath());
+                return;
+            }
+
+            try (InputStream stream = new FileInputStream(file)) {
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(stream))
                         .build();
 
                 if (FirebaseApp.getApps().isEmpty()) {
                     FirebaseApp.initializeApp(options);
-                    log.info("Firebase app has been initialized successfully.");
+                    log.info("✅ Firebase app initialized successfully using file: {}", file.getAbsolutePath());
+                } else {
+                    log.info("⚠️ Firebase app already initialized.");
                 }
             }
-        } catch (IOException e) {
-            log.error("Error initializing Firebase app", e);
+
+        } catch (Exception e) {
+            log.error("❌ Error initializing Firebase app", e);
         }
     }
 }
