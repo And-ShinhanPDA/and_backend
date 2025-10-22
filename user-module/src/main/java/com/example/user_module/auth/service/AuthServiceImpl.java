@@ -79,8 +79,10 @@ public class AuthServiceImpl implements AuthService {
                     .fcmToken(loginReq.fcmToken())
                     .actived(true)
                     .build());
+
             log.info("✅ FCM 토큰 신규 등록: userId={}, deviceId={}", user.getId(), loginReq.deviceId());
         } else {
+            fcmRepository.activateToken(user.getId(), loginReq.deviceId());
             log.info("⚠️ 이미 존재하는 FCM 토큰, 저장 스킵: userId={}, deviceId={}", user.getId(), loginReq.deviceId());
         }
 
