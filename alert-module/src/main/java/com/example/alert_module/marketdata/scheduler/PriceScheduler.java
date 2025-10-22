@@ -27,7 +27,7 @@ public class PriceScheduler {
 
     // 🕘 매일 오전 9시 (시가 알림)
 //    @Scheduled(cron = "0 0 9 * * MON-FRI", zone = "Asia/Seoul")
-    @Scheduled(cron = "0 30 10 * * MON-FRI", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 11 * * MON-FRI", zone = "Asia/Seoul")
     public void sendOpenPriceAlerts() {
         processPriceAlerts("openPrice");
     }
