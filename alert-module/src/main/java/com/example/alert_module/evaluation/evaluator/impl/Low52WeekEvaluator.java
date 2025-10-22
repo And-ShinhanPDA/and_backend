@@ -38,7 +38,7 @@ public class Low52WeekEvaluator implements ConditionEvaluator {
 
         if (price == null || low52w == null) return false;
 
-        boolean ok = price >= low52w;
+        boolean ok = price <= low52w;
 
         log.info("[LOW_52W] userId={} stock={} price={} low52w={} → {}",
                 manager.getAlert().getUserId(), stockCode,
