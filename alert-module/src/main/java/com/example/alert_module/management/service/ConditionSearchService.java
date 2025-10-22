@@ -168,7 +168,7 @@ public class ConditionSearchService {
     }
 
     public List<ConditionTriggeredRes> getTriggeredConditionSummary(Long userId) {
-        List<Alert> alerts = alertRepository.findByUserIdAndStockCode(userId, null);
+        List<Alert> alerts = alertRepository.findByUserIdAndStockCodeAndIsActivedTrue(userId, null);
         log.info("[ConditionTriggerService] userId={}의 조건 탐색형 알림 개수: {}", userId, alerts.size());
 
         List<ConditionTriggeredRes> responseList = new ArrayList<>();
