@@ -26,7 +26,9 @@ public class PriceScheduler {
     private final PushService pushService;
 
     // 🕘 매일 오전 9시 (시가 알림)
-    @Scheduled(cron = "0 0 9 * * MON-FRI", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 0 9 * * MON-FRI", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 */3 * * * MON-FRI", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 10 * * MON-FRI", zone = "Asia/Seoul")
     public void sendOpenPriceAlerts() {
         processPriceAlerts("openPrice");
     }

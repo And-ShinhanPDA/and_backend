@@ -92,13 +92,16 @@ public class PushService {
 
         log.info("💰 [PushPrice] userId={}, title={}, body={}", userId, message.title(), message.body());
 
+        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue(userId);
+        List<String> tokenList = tokens.stream()
+                .map(FcmToken::getFcmToken)
+                .toList();
 
-        List<FcmToken> tokens = fcmRepository.findByUserIdAndActivedTrue((userId));
-        for (FcmToken token : tokens) {
-            notificationService.send(token.getFcmToken(), message);
-        }
+        notificationService.sendAll(tokenList, message);
 
     }
+
+
 
 
     private void saveAlertHistory(Long alertId, String body) {
