@@ -292,6 +292,13 @@ public class AlertService {
             if (cond == null)
                 throw new IllegalArgumentException("등록되지 않은 indicator: " + c.indicator());
 
+            Double threshold2 = c.threshold2();
+
+            if (isBasePriceIndicator(c.indicator()) && request.stockCode() != null) {
+                threshold2 = fetchCurrentPriceFromRedis(request.stockCode());
+                log.info("📈 updateAlert - Redis 기준가 설정: {} = {}", request.stockCode(), threshold2);
+            }
+
             AlertConditionManager acm = AlertConditionManager.of(alert, cond, c.threshold(), c.threshold2());
             alertConditionManagerRepository.save(acm);
 
@@ -299,7 +306,7 @@ public class AlertService {
                     cond.getId(),
                     cond.getIndicator(),
                     c.threshold(),
-                    c.threshold2(),
+                    threshold2,
                     cond.getDescription()
             ));
         }
